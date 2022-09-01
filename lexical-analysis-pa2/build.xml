@@ -57,11 +57,16 @@
     <condition property="test5" value="success" else="fail">
       <filesmatch file1="tests/test5.out" file2="tests/test5.out.reference" textfile="true"/>
     </condition>
+    <condition property="test6" value="success" else="fail">
+      <filesmatch file1="tests/test6.out" file2="tests/test6.out.reference" textfile="true"/>
+    </condition>
+
     <echo>Test 1: ${test1}</echo>
     <echo>Test 2: ${test2}</echo>
     <echo>Test 3: ${test3}</echo>
     <echo>Test 4: ${test4}</echo>
     <echo>Test 5: ${test5}</echo>
+    <echo>Test 6: ${test6}</echo>
     <echo>
 You can compare 'tests/testN.out' and 'tests/testN.out.reference'
 to know more about a failed test case.
@@ -74,6 +79,7 @@ to know more about a failed test case.
     <exec executable="python2.7" output="tests/test3.out"> <arg line="mylexer.py tests/test3.cl"/> </exec>
     <exec executable="python2.7" output="tests/test4.out"> <arg line="mylexer.py tests/test4.cl"/> </exec>
     <exec executable="python2.7" output="tests/test5.out"> <arg line="mylexer.py tests/test5.cl"/> </exec>
+    <exec executable="python2.7" output="tests/test6.out"> <arg line="mylexer.py tests/test6-stack-machine.cl"/> </exec>
   </target>
 
   <!-- target: lexer -->
@@ -85,7 +91,7 @@ to know more about a failed test case.
 
   <target name="CoolLexer.java" depends="clean">
     <exec executable="java" failonerror="true">
-      <arg line="-cp coolc.jar jflex.Main cool.lex"/>
+      <arg line="-cp coolc.jar jflex.Main -dot cool.lex"/>
     </exec>
   </target>
 
