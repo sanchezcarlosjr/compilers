@@ -1,0 +1,118 @@
+
+README file for Programming Assignment 1
+========================================
+
+Your directory should now contain the following files:
+
+ build.xml
+ runmips.py
+ coolc.py
+ coolc.jar
+ trap_handler.mars
+ README
+ atoi.cl
+ stack.cl
+ stack.test
+ PA1.pdf
+ cool-manual.pdf
+
+	build.xml contains targets for compiling and testing your
+	program. DO NOT MODIFY.
+
+        runmips.py is a script to run a mips assembly file on the MARS 
+        mips emulator. DO NOT MODIFY.
+
+        coolc.py is a script to drive the compiler. DO NOT MODIFY.
+
+        coolc.jar is a jar file containing a coolc compiler reference
+        implementation and the MARS mips emulator. DO NOT MODIFY.
+
+        trap_handler.mars is a trap handler implementation required
+        by the MART mips emulator. DO NOT MODIFY.
+
+	README contains this info. Part of the assignment is to
+	answer the questions at the end of this README file.
+	Just edit this file.
+
+	atoi.cl is an implementation in Cool of the string to integer
+	conversion function known from the C language.
+
+	stack.cl is the skeleton file which you should fill in with
+	your program.
+
+	stack.test is a short test input to the stack machine. It is
+	run through your program when you hand it in, and the output
+	is also	handed in.
+
+        PA1.pdf is the specficiation of the first programming assignment.
+        Please read it carefully.
+
+        cool-manual.pdf is the specification of the cool language syntax
+        and semantics. Please read it carefully.
+
+
+System Requirements
+-------------------
+
+        If you want to use your own system for the development, you will
+        need to install following programs before starting the assignment.
+
+  JDK version 1.7 (Java 7 Development Kit)
+  Apache Ant 1.7 (or newer)
+  Python 2.7
+
+        After installing a package, please put the path to the bin folder 
+        of the installed package in your PATH variable. I.e., "java", "ant",
+        and "python" commands should run without the exact path to the
+        corresponding bin folder. You also need to set "JAVA_HOME" and
+        "ANT_HOME" environment variables. 
+
+Instructions
+------------
+
+	To compile and test your program, type:
+
+	% ant test
+
+        Try it now -- it should work, and print "Nothing implemented"
+        (among a few other things).
+
+
+        To simply compile your program, type
+        % python coolc.py stack.cl atoi.cl
+
+        And to run the program, type
+        % python runmips.py stack.s
+
+	Instructions for turning in the assignment are given in the handout.
+
+	GOOD LUCK!
+
+
+---8<------8<------8<------8<---cut here---8<------8<------8<------8<---
+
+Questions on PA1
+----------------
+
+1. Describe your implementation of the stack machine in a single short
+   paragraph.
+
+Stack machine scan commands where they are responsables that execute operations with the list.
+
+
+2. List 3 things that you like about the Cool programming language.
+
+
+3. List 3 things you DON'T like about Cool.
+
+
+
+Requirements and constraints
+-------------
+[x] Program reads signed integers.
+[x] Program reads unsigned integers.
+[x] Program stops gracefully with 'x'.
+[x] Program is OOP.
+[x] Program manages errors.
+[x] Program manages stack left-to-right like assigment.
+[x] MIPS has problems with integers greater than 999999999 and sometimes with least.

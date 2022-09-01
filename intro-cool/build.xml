@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="test" default="source">  
+  <description>
+    CS164 Programming Assignment #1
+  </description>
+
+  <!-- set global properties for this build -->
+  <property environment="env"/> 
+  <property name="assn" value=" 1"/>
+  <property name="class" value="cs164"/>
+  <property name="src" value="stack.cl runmips coolc README coolc.jar atoi.cl stack.test"/>
+
+  <!-- target: test -->
+  <target name="test" depends="compile">
+    <echo message="stack.test"/>
+    <exec executable="python2" input="stack.test">
+      <arg line="runmips.py stack.s"/>
+    </exec>
+  </target>
+
+  <!-- target: clean --> 
+  <target name="clean">
+    <delete>
+      <fileset dir="." includes="*.s"/>
+      <fileset file="./core"/>
+      <fileset dir="." includes="~*"/> 
+    </delete>
+  </target>
+
+  <!-- target: compile -->
+  <target name="compile">
+    <exec executable="python2">
+      <arg line="coolc.py tokens.cl stack.cl atoi.cl list.cl"/>
+    </exec>
+  </target>
+</project>
+

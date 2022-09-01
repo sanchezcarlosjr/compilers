@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="test" default="source">  
+  <description>
+    CS164 Programming Assignment #2
+  </description>
+
+  <!-- set global properties for this build -->
+  <property environment="env"/> 
+  <property name="assn" value="2"/>
+  <property name="class" value="cs164"/>
+
+  <property name="src" value="cool.lex test.cl README"/>
+
+  <property name="csrc" value="AbstractSymbol.java AbstractTable.java BoolConst.java CgenSupport.java Flags.java IdSymbol.java IdTable.java IntSymbol.java IntTable.java Lexer.java StringSymbol.java StringTable.java TokenConstants.java Utilities.java"/>
+  <property name="cgen" value="CoolLexer.java"/>
+  <property name="cfil" value="${csrc} ${cgen}"/>
+
+  <property name="output" value="test.output"/>
+
+  <property name="cupclasspath" value=""/>
+  <path id="classpath.ant">
+    <!--<dirset dir="${cupclasspath}"/> -->
+    <fileset dir="${cupclasspath}">
+      <include name="coolc.jar"/>
+    </fileset>
+    <dirset dir="."/>
+  </path>
+
+  <!-- target: test -->
+  <target name="test" depends="lexer">
+    <exec executable="python2.7">
+      <arg line="mylexer.py test.cl"/>
+    </exec>
+  </target>
+
+  <target name="test.output" depends="lexer">
+    <delete file="./test.output"/>
+    <exec executable="python2.7" output="test.output">
+      <arg line="mylexer.py test.cl"/>
+    </exec>
+  </target>
+
+  <!-- target: test-all -->
+  <target name="test-all" depends="execute-all">
+    <condition property="test1" value="success" else="fail">
+      <filesmatch file1="tests/test1.out" file2="tests/test1.out.reference" textfile="true"/>
+    </condition>
+    <condition property="test2" value="success" else="fail">
+      <filesmatch file1="tests/test2.out" file2="tests/test2.out.reference" textfile="true"/>
+    </condition>
+    <condition property="test3" value="success" else="fail">
+      <filesmatch file1="tests/test3.out" file2="tests/test3.out.reference" textfile="true"/>
+    </condition>
+    <condition property="test4" value="success" else="fail">
+      <filesmatch file1="tests/test4.out" file2="tests/test4.out.reference" textfile="true"/>
+    </condition>
+    <condition property="test5" value="success" else="fail">
+      <filesmatch file1="tests/test5.out" file2="tests/test5.out.reference" textfile="true"/>
+    </condition>
+    <echo>Test 1: ${test1}</echo>
+    <echo>Test 2: ${test2}</echo>
+    <echo>Test 3: ${test3}</echo>
+    <echo>Test 4: ${test4}</echo>
+    <echo>Test 5: ${test5}</echo>
+    <echo>
+You can compare 'tests/testN.out' and 'tests/testN.out.reference'
+to know more about a failed test case.
+    </echo>
+  </target>
+
+  <target name="execute-all" depends="lexer">
+    <exec executable="python2.7" output="tests/test1.out"> <arg line="mylexer.py tests/test1.cl"/> </exec>
+    <exec executable="python2.7" output="tests/test2.out"> <arg line="mylexer.py tests/test2.cl"/> </exec>
+    <exec executable="python2.7" output="tests/test3.out"> <arg line="mylexer.py tests/test3.cl"/> </exec>
+    <exec executable="python2.7" output="tests/test4.out"> <arg line="mylexer.py tests/test4.cl"/> </exec>
+    <exec executable="python2.7" output="tests/test5.out"> <arg line="mylexer.py tests/test5.cl"/> </exec>
+  </target>
+
+  <!-- target: lexer -->
+  <target name="lexer" depends="CoolLexer.java">
+    <javac srcdir="." destdir="." includes="${cfil}" failonerror="true">
+      <classpath refid="classpath.ant"/>
+    </javac>
+  </target>
+
+  <target name="CoolLexer.java" depends="clean">
+    <exec executable="java" failonerror="true">
+      <arg line="-cp coolc.jar jflex.Main cool.lex"/>
+    </exec>
+  </target>
+
+  <!-- target: clean -->
+  <target name="clean">
+    <delete>
+      <fileset dir="." includes="*~ *.s *.class ${output}"/>
+      <fileset dir="." includes="CoolLexer.java"/>
+    </delete>
+  </target>
+
+  <!-- target: submit-clean -->
+  <target name="submit-clean" depends="test.output">
+    <delete>
+      <fileset dir="." includes="*~ *.s *.class ${cgen}"/>
+    </delete>
+  </target>
+</project>
+
