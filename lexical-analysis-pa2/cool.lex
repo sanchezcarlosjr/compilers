@@ -109,11 +109,13 @@ Integer = [0-9][0-9]*
    yybegin(MULTILINE_COMMENT);
 }
 
+// Error state when programmer use *) but (*
 <YYINITIAL> "*)" {
    return new Symbol(TokenConstants.ERROR, "Unmatched *)");
 }
 
 
+// REGEX: "(*" (InputCharacter|\n)* "*)" 
 <MULTILINE_COMMENT> {
    "*)" {
       yybegin(YYINITIAL);
@@ -132,6 +134,7 @@ Integer = [0-9][0-9]*
    yybegin(STRING);
 }
 
+// "(\n|\t|\r|\|InputCharacter)*"
 <STRING> {
   \" {
         yybegin(YYINITIAL);
@@ -172,7 +175,7 @@ Integer = [0-9][0-9]*
 
 
 
-
+// Precendence order "=>" is higher than "=". 
 <YYINITIAL>"=>"		{ return new Symbol(TokenConstants.DARROW); }
 
 

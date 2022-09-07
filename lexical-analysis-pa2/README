@@ -145,3 +145,18 @@ Instructions
 Write-up for PA2
 ----------------
 
+# Changelog v1.0
+tests/test6-stack-macine.cl
+tests/test6.out
+tests/test6.out.reference
+cool.lex
+build.xml // I have modified it since it's neccesary. 
+dfa-big.dot
+dfa.min.dot
+nfa.dot
+
+# My lexer
+My lexer has the follwing limitations:
+1. "(*".*"*)" It's nonregular language if it is neccesary scanning new comments inside. But, we don't consider it.
+2. The instructor Lexer scans Emojis. My lexer cannot. I think it happen by Java version and UNICODE.
+3. My lexer captures all erors.  
