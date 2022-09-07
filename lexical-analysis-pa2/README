@@ -159,4 +159,13 @@ nfa.dot
 My lexer has the follwing limitations:
 1. "(*".*"*)" It's nonregular language if it is neccesary scanning new comments inside. But, we don't consider it.
 2. The instructor Lexer scans Emojis. My lexer cannot. I think it happen by Java version and UNICODE.
-3. My lexer captures all erors.  
+3. My lexer captures all erors. But jflex shows
+```
+     [exec] Warning in file "cool.lex" (line 159):
+     [exec] Rule can never be matched:
+     [exec]   {LineTerminator} {
+     [exec]
+     [exec] Warning in file "cool.lex" (line 164):
+     [exec] Rule can never be matched:
+     [exec]   .                { /*
+```
