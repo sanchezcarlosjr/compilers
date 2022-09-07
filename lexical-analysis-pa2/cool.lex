@@ -97,8 +97,10 @@ ObjectId = [:lowercase:] [:jletterdigit:]*
 Integer = [0-9][0-9]*
 %%
 
+// If Initial State lies on Line Terminator, then flex count a new line
 <YYINITIAL>{LineTerminator} { count_new_line(); }
 
+// We ignore unuseful symbols for next step.
 <YYINITIAL>{WhiteSpace} {}
 
 <YYINITIAL>{OneLineComment} {}
@@ -172,7 +174,7 @@ Integer = [0-9][0-9]*
 
 
 
-
+// Key Words
 <YYINITIAL>"=>"		{ return new Symbol(TokenConstants.DARROW); }
 
 
@@ -219,6 +221,8 @@ Integer = [0-9][0-9]*
 <YYINITIAL>"}"			{ return new Symbol(TokenConstants.RBRACE); }
 <YYINITIAL>"{"			{ return new Symbol(TokenConstants.LBRACE); }
 
+
+// Identifiers and types
 <YYINITIAL>{ObjectId}			{ return new Symbol(TokenConstants.OBJECTID,
 					    AbstractTable.inttable.addString(yytext())); }
 
