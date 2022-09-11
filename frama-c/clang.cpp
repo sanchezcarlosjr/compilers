@@ -1,7 +1,0 @@
-
-
-class X {};
-
-
-int main() {
-};
