@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="test" default="source">  
+  <description>
+    CS164 Programming Assignment #3
+  </description>
+
+  <!-- set global properties for this build -->
+  <property environment="env"/> 
+  <property name="assn" value="3"/>
+  <property name="class" value="cs164"/>
+
+  <property name="src" value="cool.cup good.cl bad.cl README"/>
+  <property name="csrc" value="AbstractSymbol.java AbstractTable.java BoolConst.java CgenClassTable.java CgenNode.java CgenSupport.java ClassTable.java CoolTokenLexer.java Flags.java IdSymbol.java IdTable.java IntSymbol.java IntTable.java ListNode.java Parser.java StringSymbol.java StringTable.java SymbolTable.java TreeConstants.java TreeNode.java Utilities.java cool-tree.java"/>
+
+  <property name="libs" value="reference-lexer-phase reference-semant-phase reference-cgen-phase reference-anngen-phase"/>
+  <property name="cgen" value="CoolParser.java TokenConstants.java"/>
+  <property name="cfil" value="${csrc} ${cgen}"/>
+
+  <property name="tests" value="tests/good1.test, tests/good2.test, tests/good3.test, tests/good4.test, tests/good5.test, tests/good6.test, tests/bad1.test, tests/bad2.test, tests/bad3.test, tests/bad4.test"/>
+  <property name="output" value="good.output bad.output cool.output"/>
+
+  <path id="classpath">
+    <dirset dir="."/> 
+    <fileset dir="./">
+      <include name="coolc.jar"/>
+    </fileset>
+  </path>
+
+  <!-- target: test -->
+  <target name="test" depends="parser">
+    <exec executable="python2.7">
+      <arg line="myparser.py bad.cl"/>
+    </exec>
+    <exec executable="python2.7">
+      <arg line="myparser.py good.cl"/>
+    </exec>
+  </target>
+
+  <target name="test.output" depends="parser">
+    <delete file="./test.output"/>
+    <exec executable="python2.7" output="bad.output">
+      <arg line="myparser.py bad.cl"/>
+    </exec>
+    <exec executable="python2.7" output="good.output">
+      <arg line="myparser.py good.cl"/>
+    </exec>
+  </target>
+
+  <!-- target: test-all -->
+  <target name="test-all" depends="parser">
+    <exec executable="python2.7"> <arg line="compare-parser.py tests/good1.test"/> </exec>
+    <exec executable="python2.7"> <arg line="compare-parser.py tests/good2.test"/> </exec>
+    <exec executable="python2.7"> <arg line="compare-parser.py tests/good3.test"/> </exec>
+    <exec executable="python2.7"> <arg line="compare-parser.py tests/good4.test"/> </exec>
+    <exec executable="python2.7"> <arg line="compare-parser.py tests/good5.test"/> </exec>
+    <exec executable="python2.7"> <arg line="compare-parser.py tests/good6.test"/> </exec>
+    <exec executable="python2.7"> <arg line="compare-parser.py tests/bad1.test"/> </exec>
+    <exec executable="python2.7"> <arg line="compare-parser.py tests/bad2.test"/> </exec>
+    <exec executable="python2.7"> <arg line="compare-parser.py tests/bad3.test"/> </exec>
+    <exec executable="python2.7"> <arg line="compare-parser.py tests/bad4.test"/> </exec>
+    <echo>
+You can check 'tests/NAME.test.diff' to know more about a failed test case.
+    </echo>
+  </target>
+
+  <!-- target: parser -->
+  <target name="parser" depends="Cup">
+    <javac srcdir="." destdir="." includes="${cfil}" debug="true" nowarn="true" failonerror="true">
+      <classpath refid="classpath"/>
+    </javac>
+  </target>
+
+  <target name="Cup" depends="clean">
+    <exec executable="java" output="cool.output" failonerror="true">
+      <arg line="-cp ./coolc.jar java_cup.Main -parser CoolParser -symbols TokenConstants -expect 10000 -dump -nopositions cool.cup"/>
+    </exec>
+  </target>
+
+  <!-- target: clean -->
+  <target name="clean">
+    <delete>
+      <fileset dir="." includes="*~ *.s *.class ${cgen} ${output}"/>
+      <fileset dir="." includes="parser"/>
+    </delete>
+  </target>
+
+
+  <!-- target: submit-clean -->
+  <target name="submit-clean" depends="test.output">
+    <delete>
+      <fileset dir="." includes="*~ *.s *.class ${cgen}"/>
+      <fileset dir="." includes="parser"/> 
+    </delete>
+  </target>
+</project>

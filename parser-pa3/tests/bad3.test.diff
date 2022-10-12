@@ -1,0 +1,12 @@
+*** The reference
+
+--- Yours
+
+***************
+
+*** 1 ****
+
+! "tests/bad3.test", line 3: parse error at or near ESAC
+--- 1 ----
+
+! "tests/bad3.test", line 2: parse error at or near OBJECTID = foo

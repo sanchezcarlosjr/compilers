@@ -1,0 +1,13 @@
+*** The reference
+
+--- Yours
+
+***************
+
+*** 1,2 ****
+
+! "tests/bad4.test", line 6: parse error at or near OBJECTID = extends
+! "tests/bad4.test", line 15: parse error at or near OBJECTID = implements
+--- 1 ----
+
+! "tests/bad4.test", line 2: parse error at or near OBJECTID = foo

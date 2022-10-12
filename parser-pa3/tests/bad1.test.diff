@@ -1,0 +1,12 @@
+*** The reference
+
+--- Yours
+
+***************
+
+*** 1 ****
+
+! "tests/bad1.test", line 2: parse error at or near ')'
+--- 1 ----
+
+! "tests/bad1.test", line 2: parse error at or near OBJECTID = test
