@@ -110,52 +110,7 @@ precedence right DOT;
  * do not assume that any particular rule is complete.                 *
  ***********************************************************************/
 
-/* We describe COOL Grammar in pure Backus-Naur Form.
-  <program> ::= <class_list>
-  <class_list> ::= <class> | <class_list> <class>
-  <class> ::= CLASS TYPEID LBRACE <optional_feature_list> RBRACE SEMI
-  <class> ::= CLASS TYPEID INHERITS TYPEID LBRACE <optional_feature_list> RBRACE SEMI
-  <optional_feature_list> ::= EPISLON | 
-                              <optional_feature_list> <method> SEMI |
-                              <optional_feature_list> <attr> SEMI
-  <method> ::= OBJECTID LPAREN <optional_formal_list> RPAREN COLON TYPEID LBRACE <expr> RBRACE
-  <attr> ::= OBJECTID COLON TYPEID <assign_expr>
-  <optional_formal_list> ::= EPSILON | <formal_list>
-  <formal_list> ::= <formal> | <formal> COMMA <formal_list>
-  <formal> ::= OBJECTID COLON TYPEID
-  <optional_expr_list> ::= EPSILON | <expr_list>
-  <expr_list> ::= <expr> | <expr> COMMA <expr_list>
-  <expr_sentences> ::= <expr> SEMI | <expr_sentences> <expr> SEMI
-  <assign_expr> ::= ASSIGN <expr> | EPSILON
-  <dispatch_parent> ::= AT TYPEID | EPSILON
-  <list_assigns> ::= EPSILON | COMMA OBJECTID COLON TYPEID <assign_expr> <list_assigns>
-  <list_cases> ::= <case> | <list_case> <case>
-  <case> ::= OBJECTID COLON TYPEID DARROW <expr> SEMI 
-  <expr> ::= OBJECTID ASSIGN <expr>
-  <expr> ::= <expr> <dispatch_parent> DOT OBJECTID LPAREN <optional_expr_list> RPAREN
-  <expr> ::= OBJECTID LPAREN <optional_expr_list> RPARENT
-  <expr> ::= IF <expr> THEN <expr> ELSE <expr> FI
-  <expr> ::= WHILE <expr> LOOP <expr> POOL
-  <expr> ::= LBRACE <expr_sentences> RBRACE
-  <expr> ::= LET OBJECTID COLON TYPEID <assign_expr> <list_assigns> IN <expr>
-  <expr> ::= CASE <expr> OF <list_cases> ESAC
-  <expr> ::= NEW TYPEID
-  <expr> ::= ISVOID TYPEID
-  <expr> ::= <expr> PLUS <expr>
-  <expr> ::= <expr> MINUS <expr>
-  <expr> ::= <expr> MULT <expr>
-  <expr> ::= <expr> DIV <expr>
-  <expr> ::= NEG <expr>
-  <expr> ::= <expr> LE <expr>
-  <expr> ::= <expr> LT <expr>
-  <expr> ::= <expr> EQ <expr>
-  <expr> ::= NOT <expr>
-  <expr> ::= LPAREN <expr> RPAREN
-  <expr> ::= OBJECTID | INT_CONST | STR_CONST | BOOL_CONST
-*/
-
-
-/* Program */
+/* Star symbol is the start symbol. */
 program	
 	::= class_list:cl
 	    {: RESULT = new programc(curr_lineno(), cl); :}
@@ -232,7 +187,7 @@ formal_c ::= OBJECTID:name COLON TYPEID:type_declaration
 	     | error
 	    ;
 
-/* Expressions */
+/* Expression */
 expr
 	::= 
 	  OBJECTID:name ASSIGN expr:e1

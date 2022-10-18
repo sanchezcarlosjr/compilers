@@ -60,8 +60,15 @@ class Main {
   b : Foo <- new Foo;
   c : Razz <- new Razz;
   d : Bar <- new Bar;
+  mt : case new Bar + 1 of x: Bazz => y: 1 esac;
 
   main(): String { "do nothing" };
+
+  temp(): Int
+  {
+    let i: Int <- 5, x: String, m: Int <- 1 in 7+if 1 then 1 else 2 fi
+    - (1+2*5/x+{1;})@A.temp()
+  }
 
 };
 
