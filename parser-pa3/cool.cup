@@ -91,7 +91,15 @@ nonterminal Expressions actuals, exp_list, statements;
  * Precedence declarations.
  */
 /*** FILL-IN HERE ***/
-
+precedence right ASSIGN;
+precedence right NOT;
+precedence nonassoc EQ, LE, LT;
+precedence left PLUS, MINUS;
+precedence left MULT, DIV;
+precedence right ISVOID;
+precedence right NEG;
+precedence right AT;
+precedence right DOT;
 
 /***********************************************************************
  * Grammar rules.                                                      *
@@ -178,6 +186,7 @@ class_cc
 				    f, curr_filename()); :}
 	| CLASS TYPEID:n INHERITS TYPEID:p LBRACE optional_feature_list:f RBRACE SEMI
 	    {: RESULT = new class_c(curr_lineno(), n, p, f, curr_filename()); :}
+	| error
 	;
 
 
@@ -198,6 +207,7 @@ attr_c ::=
             /* assigment */
 	  | OBJECTID:id COLON TYPEID:type ASSIGN expr:e1
             {: RESULT = new attr(curr_lineno(), id, type, e1); :}
+	    | error
 	  ;
 
 
@@ -208,6 +218,7 @@ method_c ::=
              /* no arguments */
             | OBJECTID:name LPAREN RPAREN COLON TYPEID:return_type LBRACE expr:e1 RBRACE
               {: RESULT = new method(curr_lineno(), name, new Formals(curr_lineno()), return_type,  e1); :}
+	    | error
 	    ;
 
 optional_formal_list ::=   formal_c:formal
@@ -218,6 +229,7 @@ optional_formal_list ::=   formal_c:formal
 
 formal_c ::= OBJECTID:name COLON TYPEID:type_declaration
              {: RESULT = new formalc(curr_lineno(), name, type_declaration); :}
+	     | error
 	    ;
 
 /* Expressions */
@@ -282,6 +294,7 @@ expr
 	                             new object(curr_lineno(), 
 	                                        AbstractTable.idtable.addString("self")),
 				     name, actual); :}
+	| error
         ;
 
 let ::=    OBJECTID:name COLON TYPEID:type COMMA let:body
@@ -292,6 +305,7 @@ let ::=    OBJECTID:name COLON TYPEID:type COMMA let:body
            {: RESULT = new let(curr_lineno(), name, type, new no_expr(curr_lineno()), body); :}
          | OBJECTID:name COLON TYPEID:type ASSIGN expr:init IN expr:body
            {: RESULT = new let(curr_lineno(), name, type, init, body); :} 
+	 | error
       ;
 
 cases_c ::= 
@@ -303,6 +317,7 @@ cases_c ::=
 	   |
             cases_c:cases OBJECTID:name COLON TYPEID:type DARROW expr:expression SEMI
 	    {: RESULT = cases.appendElement(new branch(curr_lineno(), name, type, expression)); :}
+	    | error
           ;
 
 /* Method arguments */
@@ -313,6 +328,7 @@ actuals
         /* List of arguments */
 	| LPAREN exp_list:el RPAREN
 	    {: RESULT = el; :}
+	| error
 	;
 
 /* Non-empty list of expressions */
@@ -323,6 +339,7 @@ exp_list
         /* Several expressions */
 	| exp_list:el COMMA expr:e
 	    {: RESULT = el.appendElement(e); :}
+	| error
 	;
 
 /* non empty list of statements */
@@ -331,4 +348,5 @@ statements  ::=
 	      {: RESULT = (new Expressions(curr_lineno())).appendElement(e); :} 
 	    | statements:statements_list expr:e SEMI
 	      {: RESULT = statements_list.appendElement(e); :}
+	    | error
 	    ;
