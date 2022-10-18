@@ -1,0 +1,154 @@
+Buildfile: /home/sanchezcarlosjr/Workspace/compilers-uabc/parser-pa3/build.xml
+
+clean:
+
+Cup:
+
+parser:
+    [javac] /home/sanchezcarlosjr/Workspace/compilers-uabc/parser-pa3/build.xml:68: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 24 source files to /home/sanchezcarlosjr/Workspace/compilers-uabc/parser-pa3
+    [javac] Note: /home/sanchezcarlosjr/Workspace/compilers-uabc/parser-pa3/Parser.java uses or overrides a deprecated API.
+    [javac] Note: Recompile with -Xlint:deprecation for details.
+    [javac] Note: Some input files use unchecked or unsafe operations.
+    [javac] Note: Recompile with -Xlint:unchecked for details.
+
+test:
+     [exec] "bad.cl", line 15: parse error at or near OBJECTID = b
+     [exec] Compilation halted due to lex and parse errors
+     [exec] #17
+     [exec] _program
+     [exec]   #17
+     [exec]   _class
+     [exec]     Bazz
+     [exec]     IO
+     [exec]     "good.cl"
+     [exec]     (
+     [exec]     #3
+     [exec]     _attr
+     [exec]       h
+     [exec]       Int
+     [exec]       #3
+     [exec]       _int
+     [exec]         1
+     [exec]       : _no_type
+     [exec]     #10
+     [exec]     _attr
+     [exec]       g
+     [exec]       Foo
+     [exec]       #10
+     [exec]       _typcase
+     [exec]         #5
+     [exec]         _object
+     [exec]           self
+     [exec]         : _no_type
+     [exec]         #7
+     [exec]         _branch
+     [exec]           n
+     [exec]           Bazz
+     [exec]           #6
+     [exec]           _new
+     [exec]             Foo
+     [exec]           : _no_type
+     [exec]         #8
+     [exec]         _branch
+     [exec]           n
+     [exec]           Razz
+     [exec]           #7
+     [exec]           _new
+     [exec]             Bar
+     [exec]           : _no_type
+     [exec]         #9
+     [exec]         _branch
+     [exec]           n
+     [exec]           Foo
+     [exec]           #8
+     [exec]           _new
+     [exec]             Razz
+     [exec]           : _no_type
+     [exec]         #10
+     [exec]         _branch
+     [exec]           n
+     [exec]           Bar
+     [exec]           #9
+     [exec]           _object
+     [exec]             n
+     [exec]           : _no_type
+     [exec]       : _no_type
+     [exec]     #12
+     [exec]     _attr
+     [exec]       i
+     [exec]       Object
+     [exec]       #12
+     [exec]       _dispatch
+     [exec]         #12
+     [exec]         _object
+     [exec]           self
+     [exec]         : _no_type
+     [exec]         printh
+     [exec]         (
+     [exec]         )
+     [exec]       : _no_type
+     [exec]     #14
+     [exec]     _method
+     [exec]       printh
+     [exec]       Int
+     [exec]       #14
+     [exec]       _block
+     [exec]         #14
+     [exec]         _dispatch
+     [exec]           #14
+     [exec]           _object
+     [exec]             self
+     [exec]           : _no_type
+     [exec]           out_int
+     [exec]           (
+     [exec]           #14
+     [exec]           _object
+     [exec]             h
+     [exec]           : _no_type
+     [exec]           )
+     [exec]         : _no_type
+     [exec]         #14
+     [exec]         _int
+     [exec]           0
+     [exec]         : _no_type
+     [exec]       : _no_type
+     [exec]     #16
+     [exec]     _method
+     [exec]       doh
+     [exec]       Int
+     [exec]       #16
+     [exec]       _let
+     [exec]         i
+     [exec]         Int
+     [exec]         #16
+     [exec]         _object
+     [exec]           h
+     [exec]         : _no_type
+     [exec]         #16
+     [exec]         _block
+     [exec]           #16
+     [exec]           _assign
+     [exec]             h
+     [exec]             #16
+     [exec]             _plus
+     [exec]               #16
+     [exec]               _object
+     [exec]                 h
+     [exec]               : _no_type
+     [exec]               #16
+     [exec]               _int
+     [exec]                 1
+     [exec]               : _no_type
+     [exec]             : _no_type
+     [exec]           : _no_type
+     [exec]           #16
+     [exec]           _object
+     [exec]             i
+     [exec]           : _no_type
+     [exec]         : _no_type
+     [exec]       : _no_type
+     [exec]     )
+
+BUILD SUCCESSFUL
+Total time: 2 seconds

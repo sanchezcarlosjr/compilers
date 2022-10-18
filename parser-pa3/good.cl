@@ -1,5 +1,4 @@
-class A {
+class Razz {
+     f : Int <- a@Bazz.doh() + g.doh() + e.doh() + doh() + printh();
 };
 
-Class BB__ inherits A {
-};

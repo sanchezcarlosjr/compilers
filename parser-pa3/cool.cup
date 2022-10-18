@@ -67,6 +67,7 @@ terminal AbstractSymbol TYPEID, OBJECTID;
 /**************************************************************************/
 
 
+
 /*
  * Declare types for the grammar's non-terminals.
  *
@@ -76,19 +77,20 @@ nonterminal programc program;
 nonterminal Classes class_list;
 nonterminal class_c class_cc;
 nonterminal Features optional_feature_list;
-nonterminal Expression expr;
-nonterminal Expressions actuals, exp_list;
+nonterminal Formals optional_formal_list;
+nonterminal formalc formal_c;
+nonterminal Cases cases_c;
+nonterminal method method_c;
+nonterminal attr attr_c;
+nonterminal branch branch_c;
+nonterminal Expression expr, let;
+nonterminal Expressions actuals, exp_list, statements;
 
 
 /*
  * Precedence declarations.
  */
 /*** FILL-IN HERE ***/
-
-
-
-
-
 
 
 /***********************************************************************
@@ -99,6 +101,51 @@ nonterminal Expressions actuals, exp_list;
  * a working solution, but you are welcome to if you like.  However,   *
  * do not assume that any particular rule is complete.                 *
  ***********************************************************************/
+
+/* We describe COOL Grammar in pure Backus-Naur Form.
+  <program> ::= <class_list>
+  <class_list> ::= <class> | <class_list> <class>
+  <class> ::= CLASS TYPEID LBRACE <optional_feature_list> RBRACE SEMI
+  <class> ::= CLASS TYPEID INHERITS TYPEID LBRACE <optional_feature_list> RBRACE SEMI
+  <optional_feature_list> ::= EPISLON | 
+                              <optional_feature_list> <method> SEMI |
+                              <optional_feature_list> <attr> SEMI
+  <method> ::= OBJECTID LPAREN <optional_formal_list> RPAREN COLON TYPEID LBRACE <expr> RBRACE
+  <attr> ::= OBJECTID COLON TYPEID <assign_expr>
+  <optional_formal_list> ::= EPSILON | <formal_list>
+  <formal_list> ::= <formal> | <formal> COMMA <formal_list>
+  <formal> ::= OBJECTID COLON TYPEID
+  <optional_expr_list> ::= EPSILON | <expr_list>
+  <expr_list> ::= <expr> | <expr> COMMA <expr_list>
+  <expr_sentences> ::= <expr> SEMI | <expr_sentences> <expr> SEMI
+  <assign_expr> ::= ASSIGN <expr> | EPSILON
+  <dispatch_parent> ::= AT TYPEID | EPSILON
+  <list_assigns> ::= EPSILON | COMMA OBJECTID COLON TYPEID <assign_expr> <list_assigns>
+  <list_cases> ::= <case> | <list_case> <case>
+  <case> ::= OBJECTID COLON TYPEID DARROW <expr> SEMI 
+  <expr> ::= OBJECTID ASSIGN <expr>
+  <expr> ::= <expr> <dispatch_parent> DOT OBJECTID LPAREN <optional_expr_list> RPAREN
+  <expr> ::= OBJECTID LPAREN <optional_expr_list> RPARENT
+  <expr> ::= IF <expr> THEN <expr> ELSE <expr> FI
+  <expr> ::= WHILE <expr> LOOP <expr> POOL
+  <expr> ::= LBRACE <expr_sentences> RBRACE
+  <expr> ::= LET OBJECTID COLON TYPEID <assign_expr> <list_assigns> IN <expr>
+  <expr> ::= CASE <expr> OF <list_cases> ESAC
+  <expr> ::= NEW TYPEID
+  <expr> ::= ISVOID TYPEID
+  <expr> ::= <expr> PLUS <expr>
+  <expr> ::= <expr> MINUS <expr>
+  <expr> ::= <expr> MULT <expr>
+  <expr> ::= <expr> DIV <expr>
+  <expr> ::= NEG <expr>
+  <expr> ::= <expr> LE <expr>
+  <expr> ::= <expr> LT <expr>
+  <expr> ::= <expr> EQ <expr>
+  <expr> ::= NOT <expr>
+  <expr> ::= LPAREN <expr> RPAREN
+  <expr> ::= OBJECTID | INT_CONST | STR_CONST | BOOL_CONST
+*/
+
 
 /* Program */
 program	
@@ -135,14 +182,70 @@ class_cc
 
 
 optional_feature_list
-	::= /* empty */
-	    {: RESULT = new Features(curr_lineno()); :}
-	;
+	::=    /* empty or EPISLON */
+	       {: RESULT = new Features(curr_lineno()); :}
+	      | optional_feature_list:features attr_c:attribute SEMI
+	        {: RESULT = features.appendElement(attribute); :}
+	      | optional_feature_list:features method_c:methodc SEMI
+	        {: RESULT = features.appendElement(methodc); :}
+         ;
 
+
+attr_c ::=
+            /* no assigment */
+            OBJECTID:id COLON TYPEID:type
+            {: RESULT = new attr(curr_lineno(), id, type, new no_expr(curr_lineno())); :}
+            /* assigment */
+	  | OBJECTID:id COLON TYPEID:type ASSIGN expr:e1
+            {: RESULT = new attr(curr_lineno(), id, type, e1); :}
+	  ;
+
+
+method_c ::=
+             /* method with arguments */
+              OBJECTID:name LPAREN optional_formal_list:formals RPAREN COLON TYPEID:return_type LBRACE expr:e1 RBRACE
+              {: RESULT = new method(curr_lineno(), name, formals, return_type,  e1); :}
+             /* no arguments */
+            | OBJECTID:name LPAREN RPAREN COLON TYPEID:return_type LBRACE expr:e1 RBRACE
+              {: RESULT = new method(curr_lineno(), name, new Formals(curr_lineno()), return_type,  e1); :}
+	    ;
+
+optional_formal_list ::=   formal_c:formal
+                          {: RESULT = (new Formals(curr_lineno())).appendElement(formal); :}
+                      |   optional_formal_list:formals COMMA formal_c:formal
+		          {: RESULT = formals.appendElement(formal); :}
+		      ;
+
+formal_c ::= OBJECTID:name COLON TYPEID:type_declaration
+             {: RESULT = new formalc(curr_lineno(), name, type_declaration); :}
+	    ;
 
 /* Expressions */
 expr
-	::= expr:e1 PLUS expr:e2
+	::= 
+	  OBJECTID:name ASSIGN expr:e1
+	    {: RESULT = new assign(curr_lineno(), name, e1); :}
+	|
+	  expr:e1 AT TYPEID:type_name DOT OBJECTID:name actuals:actual
+	   {: RESULT = new static_dispatch(curr_lineno(), e1, type_name,  name, actual); :}
+	|
+	  expr:e1 DOT OBJECTID:name actuals:actual
+	   {: RESULT = new dispatch(curr_lineno(), e1, name, actual); :}
+	|
+	  IF expr:predicate THEN expr:then_expr ELSE expr:else_expr FI 
+	  {: RESULT = new cond(curr_lineno(), predicate, then_expr, else_expr); :} 
+	|
+	  WHILE expr:predicate LOOP expr:body POOL
+	  {: RESULT = new loop(curr_lineno(), predicate, body); :} 
+	|
+	  LBRACE statements:body RBRACE
+          {: RESULT = new block(curr_lineno(), body); :}
+	| LET let:e 
+	   {: RESULT = e; :}
+	| CASE expr:expression OF cases_c:cases ESAC
+	   {: RESULT = new typcase(curr_lineno(), expression, cases); :}
+	|
+	  expr:e1 PLUS expr:e2
 	    {: RESULT = new plus(curr_lineno(), e1, e2); :}
 	| expr:e1 MINUS expr:e2
 	    {: RESULT = new sub(curr_lineno(), e1, e2); :}
@@ -162,6 +265,10 @@ expr
 	    {: RESULT = new comp(curr_lineno(), e); :}
 	| LPAREN expr:e RPAREN
 	    {: RESULT = e; :}
+	| NEW TYPEID:type
+	    {: RESULT = new new_(curr_lineno(), type); :}
+	| ISVOID expr:expression
+	    {: RESULT = new isvoid(curr_lineno(), expression); :}
 	| INT_CONST:i
 	    {: RESULT = new int_const(curr_lineno(), i); :}
 	| STR_CONST:s
@@ -170,13 +277,33 @@ expr
 	    {: RESULT = new bool_const(curr_lineno(), b); :}
 	| OBJECTID:o
 	    {: RESULT = new object(curr_lineno(), o); :}
-	| OBJECTID:n actuals:a
+	| OBJECTID:name actuals:actual
 	    {: RESULT = new dispatch(curr_lineno(),
 	                             new object(curr_lineno(), 
 	                                        AbstractTable.idtable.addString("self")),
-				     n, a); :}
+				     name, actual); :}
         ;
 
+let ::=    OBJECTID:name COLON TYPEID:type COMMA let:body
+           {: RESULT = new let(curr_lineno(), name, type, new no_expr(curr_lineno()), body); :}
+         | OBJECTID:name COLON TYPEID:type ASSIGN expr:init COMMA let:body
+           {: RESULT = new let(curr_lineno(), name, type, init, body); :} 
+	 |  OBJECTID:name COLON TYPEID:type IN expr:body
+           {: RESULT = new let(curr_lineno(), name, type, new no_expr(curr_lineno()), body); :}
+         | OBJECTID:name COLON TYPEID:type ASSIGN expr:init IN expr:body
+           {: RESULT = new let(curr_lineno(), name, type, init, body); :} 
+      ;
+
+cases_c ::= 
+            OBJECTID:name COLON TYPEID:type DARROW expr:expression SEMI
+             {: RESULT = (new Cases(curr_lineno())).appendElement(
+	                   new branch(curr_lineno(), name, type, expression)
+	                ); 
+	     :}
+	   |
+            cases_c:cases OBJECTID:name COLON TYPEID:type DARROW expr:expression SEMI
+	    {: RESULT = cases.appendElement(new branch(curr_lineno(), name, type, expression)); :}
+          ;
 
 /* Method arguments */
 actuals
@@ -188,7 +315,6 @@ actuals
 	    {: RESULT = el; :}
 	;
 
-
 /* Non-empty list of expressions */
 exp_list
         /* One expression */
@@ -198,3 +324,11 @@ exp_list
 	| exp_list:el COMMA expr:e
 	    {: RESULT = el.appendElement(e); :}
 	;
+
+/* non empty list of statements */
+statements  ::= 
+              expr:e SEMI
+	      {: RESULT = (new Expressions(curr_lineno())).appendElement(e); :} 
+	    | statements:statements_list expr:e SEMI
+	      {: RESULT = statements_list.appendElement(e); :}
+	    ;
