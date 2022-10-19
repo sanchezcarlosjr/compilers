@@ -1,2 +1,2 @@
-# compilers-uabc
-Compilers Course UABC
+# Compilers
+Compilers Course
