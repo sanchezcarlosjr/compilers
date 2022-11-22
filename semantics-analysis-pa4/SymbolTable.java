@@ -19,13 +19,15 @@ ON AN "AS IS" BASIS, AND THE UNIVERSITY OF CALIFORNIA HAS NO OBLIGATION TO
 PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 */
 
-import java.util.Stack;
 import java.util.Hashtable;
+import java.util.Optional;
+import java.util.Stack;
 
-/** Implements the symbol table data abstraction.
+/**
+ * Implements the symbol table data abstraction.
  *
  * <p>
- *
+ * <p>
  * In addition to strings, compilers must also determine and manage the
  * scope of program names.  A symbol table is a data structure for
  * managing scope.  Conceptually, a symbol table is just another lookup
@@ -34,7 +36,7 @@ import java.util.Hashtable;
  * type).
  *
  * <p>
- *
+ * <p>
  * In addition to adding and removing symbols, symbol tables also
  * support operations for entering and exiting scopes and for checking
  * whether an identifier is already defined in the current scope.  The
@@ -47,7 +49,7 @@ import java.util.Hashtable;
  * definition of <code>x</code>.
  *
  * <p>
- *
+ * <p>
  * Cool symbol tables are implemented using Java hashtables.  Each
  * hashtable represents a scope and associates a symbol with some
  * data. The ``data'' is whatever data the programmer wishes to
@@ -56,90 +58,98 @@ import java.util.Hashtable;
  *
  * @see AbstractSymbol
  * @see SymtabExample
- * */
+ */
 class SymbolTable {
-    private Stack tbl;
-    
-    /** Creates an empty symbol table. */
+    private final Stack<Hashtable<AbstractSymbol, Object>> tbl;
+
+    /**
+     * Creates an empty symbol table.
+     */
     public SymbolTable() {
-	tbl = new Stack();
+        tbl = new Stack<Hashtable<AbstractSymbol, Object>>();
     }
-    
-    /** Enters a new scope. A scope must be entered before anything
+
+    /**
+     * Enters a new scope. A scope must be entered before anything
      * can be added to the table.
-     * */
+     */
     public void enterScope() {
-	tbl.push(new Hashtable());
+		tbl.push(new Hashtable<AbstractSymbol, Object>());
     }
 
-    /** Exits the most recently entered scope. */
+    /**
+     * Exits the most recently entered scope.
+     */
     public void exitScope() {
-	if (tbl.empty()) {
-	    Utilities.fatalError("existScope: can't remove scope from an empty symbol table.");
-	}
-	tbl.pop();
+        if (tbl.empty()) {
+            Utilities.fatalError("existScope: can't remove scope from an empty symbol table.");
+        }
+        tbl.pop();
     }
 
-    /** Adds a new entry to the symbol table.
+    /**
+     * Adds a new entry to the symbol table.
      *
-     * @param id the symbol
-     * @param info the data asosciated with id
-     * */
+     * @param id   the symbol
+     * @param info the data associated with id
+     */
     public void addId(AbstractSymbol id, Object info) {
-	if (tbl.empty()) {
-	    Utilities.fatalError("addId: can't add a symbol without a scope.");
-	}
-	((Hashtable)tbl.peek()).put(id, info);
+        if (tbl.empty()) {
+            Utilities.fatalError("addId: can't add a symbol without a scope.");
+        }
+        tbl.peek().put(id, info);
     }
 
     /**
      * Looks up an item through all scopes of the symbol table.  If
      * found it returns the associated information field, if not it
      * returns <code>null</code>.
-     * 
+     *
      * @param sym the symbol
      * @return the info associated with sym, or null if not found
-     * */
-    public Object lookup(AbstractSymbol sym) {
-	if (tbl.empty()) {
-	    Utilities.fatalError("lookup: no scope in symbol table.");
-	}
-	// I break the abstraction here a bit by knowing that stack is 
-	// really a vector...
-	for (int i = tbl.size() - 1; i >= 0; i--) {
-	    Object info = ((Hashtable)tbl.elementAt(i)).get(sym);
-	    if (info != null) return info;
-	}
-	return null;
+     */
+    public Optional<Object> lookup(AbstractSymbol sym) {
+        if (tbl.empty()) {
+            Utilities.fatalError("lookup: no scope in symbol table.");
+        }
+        // We reach the stack until we find the symbol.
+        for (int i = tbl.size() - 1; i >= 0; i--) {
+            if (tbl.elementAt(i).containsKey(sym))
+				return Optional.of(tbl.elementAt(i).get(sym));
+        }
+        return Optional.empty();
     }
 
-    /** 
+    /**
      * Probes the symbol table.  Check the top scope (only) for the
      * symbol <code>sym</code>.  If found, return the information field.
      * If not return <code>null</code>.
      *
      * @param sym the symbol
      * @return the info associated with sym, or null if not found
-     * */
-    public Object probe(AbstractSymbol sym) {
-	if (tbl.empty()) {
-	    Utilities.fatalError("lookup: no scope in symbol table.");
-	}
-	return ((Hashtable)tbl.peek()).get(sym);
+     */
+    public Optional<Object> probe(AbstractSymbol sym) {
+        if (tbl.empty()) {
+            Utilities.fatalError("lookup: no scope in symbol table.");
+        }
+        if (tbl.peek().containsKey(sym))
+            return Optional.of(tbl.peek().get(sym));
+        return Optional.empty();
     }
-    
-    /** Gets the string representation of the symbol table.  
+
+    /**
+     * Gets the string representation of the symbol table.
      *
      * @return the string rep
-     * */
+     */
     public String toString() {
-	String res = "";
-	// I break the abstraction here a bit by knowing that stack is 
-	// really a vector...
-	for (int i = tbl.size() - 1, j = 0; i >= 0; i--, j++) {
-	    res += "Scope " + j + ": " + tbl.elementAt(i) + "\n";
-	}
-	return res;
+        String res = "";
+        // I break the abstraction here a bit by knowing that stack is
+        // really a vector...
+        for (int i = tbl.size() - 1, j = 0; i >= 0; i--, j++) {
+            res += "Scope " + j + ": " + tbl.elementAt(i) + "\n";
+        }
+        return res;
     }
 }
     

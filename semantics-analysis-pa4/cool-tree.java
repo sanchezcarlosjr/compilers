@@ -9,6 +9,7 @@
 
 import java.io.PrintStream;
 import java.util.Enumeration;
+import java.util.Objects;
 import java.util.Vector;
 
 
@@ -85,6 +86,7 @@ class Classes extends ListNode {
     public TreeNode copy() {
         return new Classes(lineNumber, copyElements());
     }
+
 }
 
 
@@ -98,6 +100,7 @@ abstract class Feature extends TreeNode {
 
     public abstract void dump_with_types(PrintStream out, int n);
 
+    public abstract void checkScope(AbstractSymbol filename, ClassTable classTable);
 }
 
 
@@ -223,6 +226,7 @@ abstract class Expression extends TreeNode {
         }
     }
 
+    public abstract void checkScope(AbstractSymbol filename, ClassTable classTable);
 }
 
 
@@ -378,6 +382,7 @@ class programc extends Program {
         semanticsAnalysis.buildSymbolTable();
         semanticsAnalysis.checkThatTheInheritanceGraphIsWellFormed();
         semanticsAnalysis.checkMainClass();
+        semanticsAnalysis.checkScope();
 
         if (semanticsAnalysis.errors()) {
             System.err.println("Compilation halted due to static semantic errors.");
@@ -459,6 +464,30 @@ class class_c extends Class_ {
         return features;
     }
 
+    public void checkScope(ClassTable classTable) {
+        classTable.getSymbolTable().enterScope();
+        for (Enumeration e = features.getElements(); e.hasMoreElements(); ) {
+            Feature feature = (Feature) e.nextElement();
+            feature.checkScope(filename, classTable);
+        }
+        if(
+               name.equals(TreeConstants.Main) &&
+                        ( classTable.getSymbolTable().probe(TreeConstants.main_meth).isEmpty() ||
+                                !classTable.getSymbolTable().probe(TreeConstants.main_meth).get().getClass().getName().equals("method")
+                        )
+        ) {
+            classTable.semantError(this.filename, this).printf("No '%s' method in class %s.\n", TreeConstants.main_meth, TreeConstants.Main);
+        }
+        if(
+                name.equals(TreeConstants.Main) &&
+                        classTable.getSymbolTable().probe(TreeConstants.main_meth).isPresent() &&
+                        classTable.getSymbolTable().probe(TreeConstants.main_meth).get().getClass().getName().equals("method") &&
+                        ((method) classTable.getSymbolTable().probe(TreeConstants.main_meth).get()).formals.getLength() > 0
+        ) {
+            classTable.semantError(this.filename, this).printf("'%s' method in class %s should have no arguments.\n", TreeConstants.main_meth, TreeConstants.Main);
+        }
+        classTable.getSymbolTable().enterScope();
+    }
 }
 
 
@@ -514,6 +543,22 @@ class method extends Feature {
         expr.dump_with_types(out, n + 2);
     }
 
+    @Override
+    public void checkScope(AbstractSymbol filename, ClassTable classTable) {
+        classTable.getSymbolTable().addId(this.name, this);
+        classTable.getSymbolTable().enterScope();
+        for (Enumeration e = formals.getElements(); e.hasMoreElements(); ) {
+            formalc formal = (formalc) e.nextElement();
+            if (classTable.getSymbolTable().probe(formal.name).isPresent()) {
+                classTable.semantError(filename, formal).printf("Formal parameter %s is multiply defined.\n", formal.name);
+            } else {
+                classTable.getSymbolTable().addId(formal.name, formal);
+            }
+        }
+        expr.checkScope(filename, classTable);
+        classTable.getSymbolTable().exitScope();
+    }
+
 }
 
 
@@ -560,6 +605,11 @@ class attr extends Feature {
         dump_AbstractSymbol(out, n + 2, name);
         dump_AbstractSymbol(out, n + 2, type_decl);
         init.dump_with_types(out, n + 2);
+    }
+
+    @Override
+    public void checkScope(AbstractSymbol filename, ClassTable classTable) {
+
     }
 
 }

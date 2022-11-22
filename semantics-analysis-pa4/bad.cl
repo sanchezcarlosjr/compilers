@@ -1,15 +1,8 @@
-class D inherits A {
-   a: Int;
-};
+class Main { main() : Object {0}; };
 
-class A inherits B {
-   b: Int;
-};
-
-class B inherits C {
-   b: Int;
-};
-
-class C inherits D {
-   a: Int;
+class A {
+    x: Int;
+    x: Int;
+    x(b:Object, x:Int) : String { "moo" };
+    x(b:Object, x:Int) : String { "moo" };
 };

@@ -205,6 +205,7 @@ Instructions
 
 Write-up for PA4
 ----------------
-
+Since we have to check inheritance SymbolTable, we enter scope with classes and build symbol table where first scope are classes.
+Then, we build the rest scopes.
 
 

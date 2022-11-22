@@ -22,7 +22,9 @@ PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // This is a project skeleton file
 
 import java.io.PrintStream;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Objects;
 
 /**
  * This class may be used to contain the semantic information such as
@@ -31,13 +33,14 @@ import java.util.*;
  */
 class ClassTable {
     private final Classes classes;
-    private int semanticsErrors;
     private final PrintStream errorStream;
-    private final HashMap<String, class_c> tableSymbol = new HashMap<String, class_c>();
+    private final SymbolTable symbolTable = new SymbolTable();
+    private int semanticsErrors;
 
     public ClassTable(Classes cls) {
         semanticsErrors = 0;
         errorStream = System.err;
+        symbolTable.enterScope();
         this.classes = cls;
         this.installBasicClasses();
     }
@@ -47,31 +50,40 @@ class ClassTable {
         new ClassTable(null).installBasicClasses();
     }
 
+    public SymbolTable getSymbolTable() {
+        return symbolTable;
+    }
+
     public void buildSymbolTable() {
         for (Enumeration e = this.classes.getElements(); e.hasMoreElements(); ) {
-            class_c class_  = (class_c) e.nextElement();
-            if(tableSymbol.containsKey(class_.getName().getString())) {
-                semantError(class_).println("Class "+ class_.getName().getString() + " was previously defined.");
+            class_c class_ = (class_c) e.nextElement();
+            if (symbolTable.lookup(class_.getName()).isPresent()) {
+                semantError(class_).printf("Class %s was previously defined.\n", class_.getName());
             } else {
-                tableSymbol.put(class_.getName().getString(), class_);
+                symbolTable.addId(class_.getName(), class_);
             }
         }
     }
+
     public void checkThatTheInheritanceGraphIsWellFormed() {
         HashSet<AbstractSymbol> set = new HashSet<>();
         for (Enumeration e = this.classes.getElements(); e.hasMoreElements(); ) {
-            class_c class_  = (class_c) e.nextElement();
-            if(!set.contains(class_.getName())) {
+            class_c class_ = (class_c) e.nextElement();
+            if (!set.contains(class_.getName())) {
                 bfs(class_, set);
             }
         }
     }
 
-    public void bfs(class_c node,  HashSet<AbstractSymbol> set) {
-        while(!Objects.equals(node.getName().getString(), TreeConstants.Object_.getString())) {
+    public void bfs(class_c node, HashSet<AbstractSymbol> set) {
+        class_c source = node;
+        while (!Objects.equals(node.getName(), TreeConstants.Object_)) {
             set.add(node.getName());
-            if(set.contains(node.getParent())) {
+            if (Objects.equals(source.name.getString(), node.getParent().getString())) {
                 semantError(node).printf("Class %s, or an ancestor of %s, is involved in an inheritance cycle.%n", node.getName(), node.getName());
+                return;
+            }
+            if (set.contains(node.getParent())) {
                 return;
             }
             if (
@@ -82,20 +94,28 @@ class ClassTable {
                 semantError(node).printf("Class %s cannot inherit class %s.%n", node.getName().getString(), node.getParent().getString());
                 return;
             }
-            if (!this.tableSymbol.containsKey(node.getParent().getString())) {
+            if (this.symbolTable.lookup(node.getParent()).isEmpty()) {
                 semantError(node).printf("Class %s inherits from undefined class %s.%n", node.getName().getString(), node.getParent().getString());
                 return;
             }
-            node = this.tableSymbol.get(node.getParent().getString());
+            node = (class_c) this.symbolTable.lookup(node.getParent()).get();
+        }
+    }
+
+    public void checkScope() {
+        for (Enumeration e = this.classes.getElements(); e.hasMoreElements(); ) {
+            class_c class_ = (class_c) e.nextElement();
+            class_.checkScope(this);
         }
     }
 
     public void checkMainClass() {
-        if (!tableSymbol.containsKey("Main")) {
-            AbstractSymbol filename = AbstractTable.stringtable.addString("<basic class>");
-            class_c main  = new class_c(0, TreeConstants.Main, TreeConstants.No_class, new Features(0), filename);
-            semantError(main).println("Class "+ main.getName().getString() + " is not defined.");
+        if (symbolTable.lookup(TreeConstants.Main).isPresent()) {
+            return;
         }
+        AbstractSymbol filename = AbstractTable.stringtable.addString("<basic class>");
+        class_c main = new class_c(0, TreeConstants.Main, TreeConstants.No_class, new Features(0), filename);
+        semantError(main).printf("Class %s is not defined.\n", main.getName());
     }
 
     /**
@@ -149,13 +169,13 @@ class ClassTable {
 
         class_c Str_class = new class_c(0, TreeConstants.Str, TreeConstants.Object_, new Features(0).appendElement(new attr(0, TreeConstants.val, TreeConstants.Int, new no_expr(0))).appendElement(new attr(0, TreeConstants.str_field, TreeConstants.prim_slot, new no_expr(0))).appendElement(new method(0, TreeConstants.length, new Formals(0), TreeConstants.Int, new no_expr(0))).appendElement(new method(0, TreeConstants.concat, new Formals(0).appendElement(new formalc(0, TreeConstants.arg, TreeConstants.Str)), TreeConstants.Str, new no_expr(0))).appendElement(new method(0, TreeConstants.substr, new Formals(0).appendElement(new formalc(0, TreeConstants.arg, TreeConstants.Int)).appendElement(new formalc(0, TreeConstants.arg2, TreeConstants.Int)), TreeConstants.Str, new no_expr(0))), filename);
 
-	    /* Do something with Object_class, IO_class, Int_class, Bool_class, and Str_class here */
+        /* Do something with Object_class, IO_class, Int_class, Bool_class, and Str_class here */
 
-        tableSymbol.put(Str_class.getName().getString(), Str_class);
-        tableSymbol.put(Bool_class.getName().getString(), Bool_class);
-        tableSymbol.put(Int_class.getName().getString(), Int_class);
-        tableSymbol.put(IO_class.getName().getString(), IO_class);
-        tableSymbol.put(Object_class.getName().getString(), Object_class);
+        symbolTable.addId(Str_class.getName(), Str_class);
+        symbolTable.addId(Bool_class.getName(), Bool_class);
+        symbolTable.addId(Int_class.getName(), Int_class);
+        symbolTable.addId(IO_class.getName(), IO_class);
+        symbolTable.addId(Object_class.getName(), Object_class);
 
     }
 
