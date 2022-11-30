@@ -244,6 +244,8 @@ We build a symbol table using "SemanticsAnalysis" Java class and the current typ
 for class in classes
     class.inferType() # class.inferType() -> features.inferType() -> features.inferType() -> methods.inferType() attributes.inferType() -> ...
 ```
+O environment is semanticsAnalysis.lookupType() It searches on current scope, features and parents.
+
 
 [] Check self type
 

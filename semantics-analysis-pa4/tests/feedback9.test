@@ -1,0 +1,8 @@
+class Main {
+   y: Int
+
+   <-
+
+   "A";
+   main() : Int {0};
+};

@@ -297,17 +297,25 @@ class SemanticsAnalysis {
         return node.map(TreeNode::get_type).or(() -> lookupTypeInParents(name).map(TreeNode::get_type));
     }
 
+    private class_c findType(AbstractSymbol type) {
+        if (type == TreeConstants.SELF_TYPE)
+            return current_class;
+        return typeTable.get(type);
+    }
+
     /**
      *  We suppose previous inheritance verification.
      *
-     * @return T' <= T
+     * @return T' <= T  == T' is child of T or T' is T
      */
     //
-    public boolean isChild(AbstractSymbol typePrime, AbstractSymbol type) {
-        class_c node = typeTable.get(typePrime);
+    public boolean conformance(AbstractSymbol typePrime, AbstractSymbol type) {
+        if (typePrime == TreeConstants.No_type || type == TreeConstants.Object_)
+            return true;
+        class_c node = findType(typePrime);
         class_c parent = typeTable.get(type);
-        while (!Objects.equals(node.getName(), TreeConstants.No_class)) {
-            if (node.getParent() == parent.getName()) {
+        while (!Objects.equals(node.name, TreeConstants.Object_)) {
+            if (node == parent) {
                 return true;
             }
             node = this.typeTable.get(node.getParent());

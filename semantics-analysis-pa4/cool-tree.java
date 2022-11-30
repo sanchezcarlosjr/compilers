@@ -587,6 +587,10 @@ class method extends Feature {
         checkFormals(semanticsAnalysis);
         checkReturnType(semanticsAnalysis);
         expr.inferType(semanticsAnalysis);
+        if (!semanticsAnalysis.conformance(expr.get_type(),get_type())) {
+            semanticsAnalysis.semantError(expr)
+                    .printf("Inferred return type %s of method %s does not conform to declared return type %s.\n", expr.get_type(), getName(), get_type());
+        }
         semanticsAnalysis.exitScope();
     }
 
@@ -669,6 +673,10 @@ class attr extends Feature {
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
         init.inferType(semanticsAnalysis);
+        if (!semanticsAnalysis.conformance(init.get_type(),get_type())) {
+            semanticsAnalysis.semantError(this)
+                    .printf("Inferred type %s of initialization of attribute %s does not conform to declared type %s.\n", init.get_type(), getName(), get_type());
+        }
     }
 
 }
@@ -1849,7 +1857,7 @@ class isvoid extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-
+        set_type(TreeConstants.Bool);
     }
 
 }
@@ -1887,7 +1895,7 @@ class no_expr extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-
+        set_type(TreeConstants.No_type);
     }
 
 }
@@ -1931,7 +1939,7 @@ class object extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-
+        set_type(TreeConstants.Object_);
     }
 
 }

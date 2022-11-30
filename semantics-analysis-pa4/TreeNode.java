@@ -247,7 +247,7 @@ Here is a complete use of one member:
 
 */
 abstract class TreeNode {
-    private AbstractSymbol type = null;
+    private AbstractSymbol type = TreeConstants.Object_;
 
     /** line in the source file from which this node came. */
     protected int lineNumber;
