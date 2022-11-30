@@ -42,7 +42,7 @@
 !         #
 !         _new
 !           B
-!         : Object
+!         : B
 !         foo
 !         (
 !         #

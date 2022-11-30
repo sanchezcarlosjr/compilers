@@ -324,7 +324,7 @@ class SemanticsAnalysis {
     }
 
     public boolean existsType(AbstractSymbol type) {
-        return this.typeTable.containsKey(type);
+        return this.typeTable.containsKey(type) || type == TreeConstants.SELF_TYPE;
     }
 
 }

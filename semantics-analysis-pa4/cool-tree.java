@@ -595,7 +595,7 @@ class method extends Feature {
     }
 
     private void checkReturnType(SemanticsAnalysis semanticsAnalysis) {
-        if (this.return_type != TreeConstants.SELF_TYPE && !semanticsAnalysis.existsType(this.return_type)) {
+        if (!semanticsAnalysis.existsType(this.return_type)) {
             semanticsAnalysis.semantError(this).printf("Undefined return type %s in method %s.\n", this.return_type, this.name);
         }
     }
@@ -603,7 +603,7 @@ class method extends Feature {
     private void checkFormals(SemanticsAnalysis semanticsAnalysis) {
         formals.children().forEach((formal) -> {
             formalc formalc = (formalc) formal;
-            formalc.checkSelfType(semanticsAnalysis);
+            formalc.checkType(semanticsAnalysis);
             if (semanticsAnalysis.isPresentInCurrentScope(formalc.name)) {
                 semanticsAnalysis.semantError(formalc).printf("Formal parameter %s is multiply defined.\n", formalc.name);
             }
@@ -672,6 +672,9 @@ class attr extends Feature {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
+        if (!semanticsAnalysis.existsType(this.get_type())) {
+            semanticsAnalysis.semantError(this).printf("Undefined type %s in attribute %s.\n", this.get_type(), this.name);
+        }
         init.inferType(semanticsAnalysis);
         if (!semanticsAnalysis.conformance(init.get_type(),get_type())) {
             semanticsAnalysis.semantError(this)
@@ -723,9 +726,13 @@ class formalc extends Formal {
         dump_AbstractSymbol(out, n + 2, type_decl);
     }
 
-    public void checkSelfType(SemanticsAnalysis semanticsAnalysis) {
+    public void checkType(SemanticsAnalysis semanticsAnalysis) {
         if (type_decl == TreeConstants.SELF_TYPE) {
             semanticsAnalysis.semantError(this).printf("Formal parameter %s cannot have type TreeConstants.SELF_TYPE.\n", name);
+            return;
+        }
+        if (!semanticsAnalysis.existsType(this.get_type())) {
+            semanticsAnalysis.semantError(this).printf("Undefined type %s in formal %s.\n", this.get_type(), this.name);
         }
     }
 }
@@ -1801,6 +1808,7 @@ class new_ extends Expression {
     public new_(int lineNumber, AbstractSymbol a1) {
         super(lineNumber);
         type_name = a1;
+        set_type(type_name);
     }
 
     public TreeNode copy() {
@@ -1822,7 +1830,9 @@ class new_ extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-
+        if (!semanticsAnalysis.existsType(this.get_type())) {
+            semanticsAnalysis.semantError(this).printf("'new' used with undefined class %s.\n", this.get_type());
+        }
     }
 
 }

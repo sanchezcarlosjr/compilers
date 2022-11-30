@@ -1,0 +1,48 @@
+*** The reference
+
+--- Yours
+
+***************
+
+*** 25,43 ****
+
+            #
+            _int
+              0
+!           : Int
+!         : Int
+          #
+          _let
+            y
+            String
+            #
+            _no_expr
+!           : _no_type
+            #
+            _int
+              4
+!           : Int
+!         : Int
+!       : Int
+      )
+--- 25,43 ----
+
+            #
+            _int
+              0
+!           : Object
+!         : Object
+          #
+          _let
+            y
+            String
+            #
+            _no_expr
+!           : Object
+            #
+            _int
+              4
+!           : Object
+!         : Object
+!       : Object
+      )
