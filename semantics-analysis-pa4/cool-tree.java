@@ -581,25 +581,26 @@ class method extends Feature {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
+        semanticsAnalysis.enterScope();
         checkFormals(semanticsAnalysis);
         checkReturnType(semanticsAnalysis);
+        semanticsAnalysis.exitScope();
     }
 
     private void checkReturnType(SemanticsAnalysis semanticsAnalysis) {
-        if (this.return_type != TreeConstants.SELF_TYPE && !semanticsAnalysis.isPresentInCurrentScope(this.return_type)) {
+        if (this.return_type != TreeConstants.SELF_TYPE && !semanticsAnalysis.isPresentInSomeScope(this.return_type)) {
             semanticsAnalysis.semantError(this).printf("Undefined return type %s in method %s.\n", this.return_type, this.name);
         }
     }
 
     private void checkFormals(SemanticsAnalysis semanticsAnalysis) {
-        HashSet<AbstractSymbol> hashSet = new HashSet<>();
         formals.children().forEach((formal) -> {
             formalc formalc = (formalc) formal;
             formalc.checkSelfType(semanticsAnalysis);
-            if (hashSet.contains(name)) {
+            if (semanticsAnalysis.isPresentInCurrentScope(name)) {
                 semanticsAnalysis.semantError(formalc).printf("Formal parameter %s is multiply defined.\n", formalc.name);
             }
-            hashSet.add(name);
+            semanticsAnalysis.addIdToCurrentScope(name, formalc);
         });
     }
 }

@@ -21,8 +21,6 @@ PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // This is a project skeleton file
 
-import com.sun.source.tree.Tree;
-
 import java.io.PrintStream;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -265,8 +263,24 @@ class SemanticsAnalysis {
         current_class.getFeatures().save(attributes, this);
     }
 
-    public boolean isPresentInCurrentScope(AbstractSymbol type) {
+    public boolean isPresentInSomeScope(AbstractSymbol type) {
         return this.symbolTable.lookup(type).isPresent();
+    }
+
+    public boolean isPresentInCurrentScope(AbstractSymbol type) {
+        return this.symbolTable.probe(type).isPresent();
+    }
+
+    public void enterScope() {
+        this.symbolTable.enterScope();
+    }
+
+    public void addIdToCurrentScope(AbstractSymbol abstractSymbol, TreeNode node) {
+        this.symbolTable.addId(abstractSymbol, node);
+    }
+
+    public void exitScope() {
+        this.symbolTable.exitScope();
     }
 }
 			  

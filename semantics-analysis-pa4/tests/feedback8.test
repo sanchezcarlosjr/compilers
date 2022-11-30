@@ -1,0 +1,9 @@
+class Main {
+   main() : Int {0};
+   f(x: Int, x: Int) : Int {0};
+};
+
+class Main2 {
+   main2() : Int {0};
+   f(x: Int) : Int {0};
+};
