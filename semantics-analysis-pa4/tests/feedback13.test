@@ -1,0 +1,10 @@
+class Y {
+   y: Int <- 0;
+};
+
+
+class Main inherits Y {
+   main() : Object {
+       y
+   };
+};

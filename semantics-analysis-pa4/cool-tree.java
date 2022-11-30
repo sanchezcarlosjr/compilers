@@ -1939,7 +1939,12 @@ class object extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-        set_type(TreeConstants.Object_);
+        Optional<AbstractSymbol> type = semanticsAnalysis.lookupType(name);
+        if(type.isEmpty()) {
+            semanticsAnalysis.semantError(this).printf("Undeclared identifier %s.\n", name);
+            return;
+        }
+        set_type(type.get());
     }
 
 }

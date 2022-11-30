@@ -1,0 +1,76 @@
+*** The reference
+
+--- Yours
+
+***************
+
+*** 1,64 ****
+
+! #
+! _program
+!   #
+!   _class
+!     A
+!     Object
+!     "tests/good1.test"
+!     (
+!     #
+!     _method
+!       foo
+!       #
+!       _formal
+!         a
+!         A
+!       Bool
+!       #
+!       _block
+!         #
+!         _lt
+!           #
+!           _int
+!             6
+!           : Int
+!           #
+!           _int
+!             7
+!           : Int
+!         : Bool
+!         #
+!         _leq
+!           #
+!           _int
+!             6
+!           : Int
+!           #
+!           _int
+!             7
+!           : Int
+!         : Bool
+!         #
+!         _comp
+!           #
+!           _bool
+!             1
+!           : Bool
+!         : Bool
+!       : Bool
+!     )
+!   #
+!   _class
+!     Main
+!     Object
+!     "tests/good1.test"
+!     (
+!     #
+!     _method
+!       main
+!       Int
+!       #
+!       _int
+!         6
+!       : Int
+!     )
+--- 1,2 ----
+
+! tests/good1.test:2: Inferred return type Object of method foo does not conform to declared return type Bool.
+! Compilation halted due to static semantic errors.

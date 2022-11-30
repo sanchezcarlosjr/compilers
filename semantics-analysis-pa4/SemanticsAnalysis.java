@@ -283,7 +283,7 @@ class SemanticsAnalysis {
 
     public Optional<Feature> lookupTypeInParents(AbstractSymbol name) {
         class_c node = current_class;
-        while (!Objects.equals(node.getName(), TreeConstants.No_class)) {
+        while (node != null) {
             if (node.getFeatures().hasFeature(name)) {
                 return node.getFeatures().probe(name);
             }
