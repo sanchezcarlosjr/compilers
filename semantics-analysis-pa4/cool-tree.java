@@ -502,6 +502,9 @@ class class_c extends Class_ {
         return features;
     }
     public void buildSymbolTable(SemanticsAnalysis semanticsAnalysis) {
+        if (name == TreeConstants.SELF_TYPE) {
+            semanticsAnalysis.semantError(this).println("TreeConstants.SELF_TYPE cannot be class name!");
+        }
         semanticsAnalysis.insertSymbolOnCurrentScope(this);
         this.features.buildSymbolTable(semanticsAnalysis);
     }
