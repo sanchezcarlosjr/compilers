@@ -582,7 +582,15 @@ class method extends Feature {
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
         checkFormals(semanticsAnalysis);
+        checkReturnType(semanticsAnalysis);
     }
+
+    private void checkReturnType(SemanticsAnalysis semanticsAnalysis) {
+        if (this.return_type != TreeConstants.SELF_TYPE && !semanticsAnalysis.isPresentInCurrentScope(this.return_type)) {
+            semanticsAnalysis.semantError(this).printf("Undefined return type %s in method %s.\n", this.return_type, this.name);
+        }
+    }
+
     private void checkFormals(SemanticsAnalysis semanticsAnalysis) {
         HashSet<AbstractSymbol> hashSet = new HashSet<>();
         formals.children().forEach((formal) -> {

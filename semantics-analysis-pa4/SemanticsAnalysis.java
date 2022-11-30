@@ -264,6 +264,10 @@ class SemanticsAnalysis {
     public void save(attr attributes) {
         current_class.getFeatures().save(attributes, this);
     }
+
+    public boolean isPresentInCurrentScope(AbstractSymbol type) {
+        return this.symbolTable.lookup(type).isPresent();
+    }
 }
 			  
     
