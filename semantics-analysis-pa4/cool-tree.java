@@ -242,32 +242,19 @@ class Formals extends ListNode {
  * Defines simple phylum Expression
  */
 abstract class Expression extends TreeNode {
-    private AbstractSymbol type = null;
-
     protected Expression(int lineNumber) {
         super(lineNumber);
-    }
-
-    public AbstractSymbol get_type() {
-        return type;
-    }
-
-    public Expression set_type(AbstractSymbol s) {
-        type = s;
-        return this;
     }
 
     public abstract void dump_with_types(PrintStream out, int n);
 
     public void dump_type(PrintStream out, int n) {
-        if (type != null) {
-            out.println(Utilities.pad(n) + ": " + type.getString());
+        if (get_type() != null) {
+            out.println(Utilities.pad(n) + ": " + get_type().getString());
         } else {
             out.println(Utilities.pad(n) + ": _no_type");
         }
     }
-
-    public void checkScope(AbstractSymbol filename, SemanticsAnalysis semanticsAnalysis) {}
 
     public abstract void inferType(SemanticsAnalysis semanticsAnalysis);
 }
@@ -425,6 +412,7 @@ class programc extends Program {
         semanticsAnalysis.buildSymbolTable();
         semanticsAnalysis.checkThatTheInheritanceGraphIsWellFormed();
         semanticsAnalysis.checkEntrypoint();
+        semanticsAnalysis.throwErrorIfThereIsSomeone();
         semanticsAnalysis.inferType();
         semanticsAnalysis.throwErrorIfThereIsSomeone();
     }
@@ -542,6 +530,7 @@ class method extends Feature {
         formals = a2;
         return_type = a3;
         expr = a4;
+        set_type(return_type);
     }
 
     public TreeNode copy() {
@@ -591,7 +580,7 @@ class method extends Feature {
     }
 
     private void checkReturnType(SemanticsAnalysis semanticsAnalysis) {
-        if (this.return_type != TreeConstants.SELF_TYPE && !semanticsAnalysis.isPresentInSomeScope(this.return_type)) {
+        if (this.return_type != TreeConstants.SELF_TYPE && !semanticsAnalysis.existsType(this.return_type)) {
             semanticsAnalysis.semantError(this).printf("Undefined return type %s in method %s.\n", this.return_type, this.name);
         }
     }
@@ -632,6 +621,7 @@ class attr extends Feature {
         name = a1;
         type_decl = a2;
         init = a3;
+        set_type(type_decl);
     }
 
     public TreeNode copy() {
@@ -667,7 +657,7 @@ class attr extends Feature {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-
+        init.inferType(semanticsAnalysis);
     }
 
 }
@@ -693,6 +683,7 @@ class formalc extends Formal {
         super(lineNumber);
         name = a1;
         type_decl = a2;
+        set_type(type_decl);
     }
 
     public TreeNode copy() {
@@ -744,6 +735,7 @@ class branch extends Case {
         name = a1;
         type_decl = a2;
         expr = a3;
+        set_type(type_decl);
     }
 
     public TreeNode copy() {
@@ -812,7 +804,8 @@ class assign extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-       
+        Optional<AbstractSymbol> type = semanticsAnalysis.lookup(name);
+        expr.inferType(semanticsAnalysis);
     }
 
 }
@@ -875,7 +868,7 @@ class static_dispatch extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-       
+
     }
 
 }
@@ -933,7 +926,7 @@ class dispatch extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-       
+
     }
 
 }
@@ -987,7 +980,7 @@ class cond extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-       
+
     }
 
 }
@@ -1036,7 +1029,7 @@ class loop extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-       
+
     }
 
 }
@@ -1087,7 +1080,7 @@ class typcase extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-       
+
     }
 
 }
@@ -1133,7 +1126,7 @@ class block extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-       
+
     }
 
 }
@@ -1192,7 +1185,7 @@ class let extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-       
+
     }
 
 }
@@ -1241,7 +1234,7 @@ class plus extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-       
+
     }
 
 }
@@ -1290,7 +1283,7 @@ class sub extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-       
+
     }
 
 }
@@ -1339,7 +1332,7 @@ class mul extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-       
+
     }
 
 }
@@ -1388,7 +1381,7 @@ class divide extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-       
+
     }
 
 }
@@ -1432,7 +1425,7 @@ class neg extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-       
+
     }
 
 }
@@ -1481,7 +1474,7 @@ class lt extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-       
+
     }
 
 }
@@ -1530,7 +1523,7 @@ class eq extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-       
+
     }
 
 }
@@ -1579,7 +1572,7 @@ class leq extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-       
+
     }
 
 }
@@ -1623,7 +1616,7 @@ class comp extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-       
+
     }
 
 }
@@ -1801,7 +1794,7 @@ class new_ extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-       
+
     }
 
 }
@@ -1845,7 +1838,7 @@ class isvoid extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-       
+
     }
 
 }
@@ -1883,7 +1876,7 @@ class no_expr extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-       
+
     }
 
 }
@@ -1927,7 +1920,7 @@ class object extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-       
+
     }
 
 }

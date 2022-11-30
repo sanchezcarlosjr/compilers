@@ -1,0 +1,85 @@
+*** The reference
+
+--- Yours
+
+***************
+
+*** 1,2 ****
+
+! tests/bad1.test:6: Method foo invoked with wrong number of arguments.
+! Compilation halted due to static semantic errors.
+--- 1,73 ----
+
+! #
+! _program
+!   #
+!   _class
+!     Main
+!     Object
+!     "tests/bad1.test"
+!     (
+!     #
+!     _method
+!       main
+!       Object
+!       #
+!       _int
+!         0
+!       : Int
+!     )
+!   #
+!   _class
+!     A
+!     Object
+!     "tests/bad1.test"
+!     (
+!     #
+!     _method
+!       bar
+!       Object
+!       #
+!       _dispatch
+!         #
+!         _new
+!           B
+!         : _no_type
+!         foo
+!         (
+!         #
+!         _object
+!           self
+!         : _no_type
+!         #
+!         _int
+!           29
+!         : _no_type
+!         #
+!         _int
+!           29
+!         : _no_type
+!         )
+!       : _no_type
+!     )
+!   #
+!   _class
+!     B
+!     A
+!     "tests/bad1.test"
+!     (
+!     #
+!     _method
+!       foo
+!       #
+!       _formal
+!         b
+!         Object
+!       #
+!       _formal
+!         x
+!         Int
+!       String
+!       #
+!       _string
+!         "moo"
+!       : String
+!     )

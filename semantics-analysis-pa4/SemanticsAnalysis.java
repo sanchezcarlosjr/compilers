@@ -22,10 +22,7 @@ PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // This is a project skeleton file
 
 import java.io.PrintStream;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * This class may be used to contain the semantic information such as
@@ -36,6 +33,9 @@ class SemanticsAnalysis {
     private final Classes classes;
     private final PrintStream errorStream;
     private final SymbolTable symbolTable = new SymbolTable();
+
+    private final Hashtable<AbstractSymbol,class_c> typeTable = new Hashtable<>();
+
     private int semanticsErrors;
 
     private class_c current_class;
@@ -43,7 +43,6 @@ class SemanticsAnalysis {
     public SemanticsAnalysis(Classes cls) {
         semanticsErrors = 0;
         errorStream = System.err;
-        symbolTable.enterScope();
         this.classes = cls;
         this.installBasicClasses();
     }
@@ -53,11 +52,11 @@ class SemanticsAnalysis {
     }
 
     public void insertSymbolOnCurrentScope(class_c class_c) {
-        if (symbolTable.lookup(class_c.getName()).isPresent()) {
+        if (typeTable.containsKey(class_c.getName())) {
             class_c.error_by_multiple_definitions(semantError(class_c));
             return;
         }
-        symbolTable.addId(class_c.getName(), class_c);
+        typeTable.put(class_c.getName(), class_c);
     }
 
     public void buildSymbolTable() {
@@ -100,23 +99,36 @@ class SemanticsAnalysis {
                             Objects.equals(node.getParent().getString(), TreeConstants.Int.getString()) ||
                             Objects.equals(node.getParent().getString(), TreeConstants.Bool.getString())
             ) {
-                semantError(node).printf("Class %s cannot inherit class %s.%n", node.getName().getString(), node.getParent().getString());
+                semantError(node).printf("Class %s cannot inherit class %s.%n", node.getName(), node.getParent());
                 return;
             }
-            if (this.symbolTable.lookup(node.getParent()).isEmpty()) {
-                semantError(node).printf("Class %s inherits from undefined class %s.%n", node.getName().getString(), node.getParent().getString());
+            if (!this.typeTable.containsKey(node.getParent())) {
+                semantError(node).printf("Class %s inherits from undefined class %s.%n", node.getName(), node.getParent());
                 return;
             }
-            node = (class_c) this.symbolTable.lookup(node.getParent()).get();
+            node = this.typeTable.get(node.getParent());
         }
     }
 
-    public boolean checkEntrypointMethod() {
-        Optional<Object> optionalMain = symbolTable.lookup(TreeConstants.Main);
-        if (optionalMain.isEmpty()) {
+
+    public boolean bfs(class_c node, class_c parent) {
+        if(!this.typeTable.containsKey(parent.getName())) {
             return false;
         }
-        class_c main = (class_c) optionalMain.get();
+        while (!Objects.equals(node.getName(), TreeConstants.No_class)) {
+            if (node.getParent() == parent.getName()) {
+                return true;
+            }
+            node = this.typeTable.get(node.getParent());
+        }
+        return false;
+    }
+
+    public boolean checkEntrypointMethod() {
+        if (!typeTable.containsKey(TreeConstants.Main)) {
+            return false;
+        }
+        class_c main = typeTable.get(TreeConstants.Main);
         if (!main.getFeatures().hasMethod(TreeConstants.main_meth)) {
             semantError(main).printf("No '%s' method in class %s.\n", TreeConstants.main_meth, main.getName());
         }
@@ -183,13 +195,12 @@ class SemanticsAnalysis {
 
         class_c Str_class = new class_c(0, TreeConstants.Str, TreeConstants.Object_, new Features(0).appendElement(new attr(0, TreeConstants.val, TreeConstants.Int, new no_expr(0))).appendElement(new attr(0, TreeConstants.str_field, TreeConstants.prim_slot, new no_expr(0))).appendElement(new method(0, TreeConstants.length, new Formals(0), TreeConstants.Int, new no_expr(0))).appendElement(new method(0, TreeConstants.concat, new Formals(0).appendElement(new formalc(0, TreeConstants.arg, TreeConstants.Str)), TreeConstants.Str, new no_expr(0))).appendElement(new method(0, TreeConstants.substr, new Formals(0).appendElement(new formalc(0, TreeConstants.arg, TreeConstants.Int)).appendElement(new formalc(0, TreeConstants.arg2, TreeConstants.Int)), TreeConstants.Str, new no_expr(0))), filename);
 
-        /* Do something with Object_class, IO_class, Int_class, Bool_class, and Str_class here */
-
-        symbolTable.addId(Str_class.getName(), Str_class);
-        symbolTable.addId(Bool_class.getName(), Bool_class);
-        symbolTable.addId(Int_class.getName(), Int_class);
-        symbolTable.addId(IO_class.getName(), IO_class);
-        symbolTable.addId(Object_class.getName(), Object_class);
+        /* Save global classes */
+        typeTable.put(Str_class.getName(), Str_class);
+        typeTable.put(Bool_class.getName(), Bool_class);
+        typeTable.put(Int_class.getName(), Int_class);
+        typeTable.put(IO_class.getName(), IO_class);
+        typeTable.put(Object_class.getName(), Object_class);
 
     }
 
@@ -263,25 +274,38 @@ class SemanticsAnalysis {
         current_class.getFeatures().save(attributes, this);
     }
 
-    public boolean isPresentInSomeScope(AbstractSymbol type) {
-        return this.symbolTable.lookup(type).isPresent();
+    public boolean isPresentInSomeValidScope(AbstractSymbol id) {
+        return this.symbolTable.lookup(id).isPresent();
     }
 
-    public boolean isPresentInCurrentScope(AbstractSymbol type) {
-        return this.symbolTable.probe(type).isPresent();
+    public boolean isPresentInCurrentScope(AbstractSymbol id) {
+        return this.symbolTable.probe(id).isPresent();
     }
 
     public void enterScope() {
         this.symbolTable.enterScope();
     }
 
-    public void addIdToCurrentScope(AbstractSymbol abstractSymbol, TreeNode node) {
-        this.symbolTable.addId(abstractSymbol, node);
+    public void addIdToCurrentScope(AbstractSymbol id, TreeNode node) {
+        this.symbolTable.addId(id, node);
     }
 
     public void exitScope() {
         this.symbolTable.exitScope();
     }
+
+    public Optional<AbstractSymbol> lookup(AbstractSymbol name) {
+        Optional<Object> type = symbolTable.lookup(name);
+        return Optional.empty();
+    }
+
+    // T' <= T
+    public boolean isChild(AbstractSymbol typePrime, AbstractSymbol type) {
+        return false;
+    }
+
+    public boolean existsType(AbstractSymbol type) {
+        return this.typeTable.containsKey(type);
+    }
+
 }
-			  
-    

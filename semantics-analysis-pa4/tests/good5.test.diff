@@ -1,0 +1,114 @@
+*** The reference
+
+--- Yours
+
+***************
+
+*** 28,45 ****
+
+              #
+              _object
+                i
+!             : Int
+              #
+              _int
+                1
+!             : Int
+!           : Int
+!         : Int
+          #
+          _object
+            self
+!         : SELF_TYPE
+!       : SELF_TYPE
+      )
+    #
+    _class
+--- 28,45 ----
+
+              #
+              _object
+                i
+!             : _no_type
+              #
+              _int
+                1
+!             : _no_type
+!           : _no_type
+!         : _no_type
+          #
+          _object
+            self
+!         : _no_type
+!       : _no_type
+      )
+    #
+    _class
+***************
+
+*** 61,67 ****
+
+        #
+        _object
+          name
+!       : String
+      )
+    #
+    _class
+--- 61,67 ----
+
+        #
+        _object
+          name
+!       : _no_type
+      )
+    #
+    _class
+***************
+
+*** 90,110 ****
+
+              #
+              _new
+                Stock
+!             : Stock
+              inc
+              (
+              )
+!           : Stock
+!         : Stock
+          #
+          _dispatch
+            #
+            _object
+              a
+!           : Stock
+            get
+            (
+            )
+!         : String
+!       : String
+      )
+--- 90,110 ----
+
+              #
+              _new
+                Stock
+!             : _no_type
+              inc
+              (
+              )
+!           : _no_type
+!         : _no_type
+          #
+          _dispatch
+            #
+            _object
+              a
+!           : _no_type
+            get
+            (
+            )
+!         : _no_type
+!       : _no_type
+      )

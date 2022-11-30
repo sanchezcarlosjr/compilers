@@ -247,6 +247,8 @@ Here is a complete use of one member:
 
 */
 abstract class TreeNode {
+    private AbstractSymbol type = null;
+
     /** line in the source file from which this node came. */
     protected int lineNumber;
     
@@ -330,6 +332,14 @@ abstract class TreeNode {
     protected void dump_line(PrintStream out, int n) {
 	out.println(Utilities.pad(n) + "#" + lineNumber);
     }
-    
+
+    public AbstractSymbol get_type() {
+        return type;
+    }
+
+    public TreeNode set_type(AbstractSymbol symbol) {
+        type = symbol;
+        return this;
+    }
 }
 	

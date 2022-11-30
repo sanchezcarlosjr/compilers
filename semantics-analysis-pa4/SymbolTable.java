@@ -137,6 +137,15 @@ class SymbolTable {
         return Optional.empty();
     }
 
+    public Optional<Object> probeBottomUp(AbstractSymbol sym) {
+        if (tbl.empty()) {
+            Utilities.fatalError("lookup: no scope in symbol table.");
+        }
+        if (tbl.elementAt(0).containsKey(sym))
+            return Optional.of(tbl.elementAt(0).get(sym));
+        return Optional.empty();
+    }
+
     /**
      * Gets the string representation of the symbol table.
      *

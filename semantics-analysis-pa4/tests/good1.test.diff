@@ -1,0 +1,72 @@
+*** The reference
+
+--- Yours
+
+***************
+
+*** 21,51 ****
+
+            #
+            _int
+              6
+!           : Int
+            #
+            _int
+              7
+!           : Int
+!         : Bool
+          #
+          _leq
+            #
+            _int
+              6
+!           : Int
+            #
+            _int
+              7
+!           : Int
+!         : Bool
+          #
+          _comp
+            #
+            _bool
+              1
+!           : Bool
+!         : Bool
+!       : Bool
+      )
+    #
+    _class
+--- 21,51 ----
+
+            #
+            _int
+              6
+!           : _no_type
+            #
+            _int
+              7
+!           : _no_type
+!         : _no_type
+          #
+          _leq
+            #
+            _int
+              6
+!           : _no_type
+            #
+            _int
+              7
+!           : _no_type
+!         : _no_type
+          #
+          _comp
+            #
+            _bool
+              1
+!           : _no_type
+!         : _no_type
+!       : _no_type
+      )
+    #
+    _class

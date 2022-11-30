@@ -58,6 +58,12 @@
     <exec executable="python2.7"> <arg line="compare-semant.py tests/feedback1.test"/> </exec>
     <exec executable="python2.7"> <arg line="compare-semant.py tests/feedback2.test"/> </exec>
     <exec executable="python2.7"> <arg line="compare-semant.py tests/feedback3.test"/> </exec>
+    <exec executable="python2.7"> <arg line="compare-semant.py tests/feedback4.test"/> </exec>
+    <exec executable="python2.7"> <arg line="compare-semant.py tests/feedback5.test"/> </exec>
+    <exec executable="python2.7"> <arg line="compare-semant.py tests/feedback6.test"/> </exec>
+    <exec executable="python2.7"> <arg line="compare-semant.py tests/feedback7.test"/> </exec>
+    <exec executable="python2.7"> <arg line="compare-semant.py tests/feedback8.test"/> </exec>
+    <exec executable="python2.7"> <arg line="compare-semant.py tests/feedback-constants.test"/> </exec>
     <echo>
           You can check 'tests/NAME.test.diff" to know more about a failed test case.
     </echo>
