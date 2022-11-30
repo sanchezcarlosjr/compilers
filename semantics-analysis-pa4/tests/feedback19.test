@@ -1,0 +1,17 @@
+class Main {
+      main() : Object {
+          (new B)@A.bar(new Main)
+      };
+};
+
+class A {
+      bar(x: A) : Object {
+	      5
+      };
+};
+
+class B inherits A {
+      foo(b:Object, x:Int) : String { "moo" };
+};
+
+

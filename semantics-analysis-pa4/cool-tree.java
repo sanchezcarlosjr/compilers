@@ -9,6 +9,8 @@
 
 import java.io.PrintStream;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -613,6 +615,32 @@ class method extends Feature {
             semanticsAnalysis.addIdToCurrentScope(formalc.name, formalc);
         });
     }
+
+    public Optional<AbstractSymbol> checkParams(SemanticsAnalysis semanticsAnalysis, TreeNode node, Expressions params) {
+        if (params.getLength() != formals.getLength()) {
+            semanticsAnalysis.semantError(node).printf("Method %s invoked with wrong number of arguments.\n", name);
+            return Optional.empty();
+        }
+        AtomicBoolean someError = new AtomicBoolean(false);
+        AtomicInteger i = new AtomicInteger();
+        params.children().forEach((param) -> {
+            ((Expression) param).inferType(semanticsAnalysis);
+            formalc formalc = (formalc) formals.getNth(i.get());
+            if (!semanticsAnalysis.conformance(param.get_type(), formalc.get_type())) {
+                semanticsAnalysis.semantError(node)
+                        .printf("In call of method %s, type %s of parameter %s does not conform to declared type %s.\n", name, param.get_type(), formalc.name, formalc.type_decl);
+                someError.set(true);
+            }
+            i.getAndIncrement();
+        });
+        if (someError.get()) {
+            return Optional.empty();
+        }
+        if (return_type == TreeConstants.SELF_TYPE) {
+            return Optional.of(TreeConstants.SELF_TYPE);
+        }
+        return Optional.of(return_type);
+    }
 }
 
 
@@ -735,7 +763,7 @@ class formalc extends Formal {
             return;
         }
         if (!semanticsAnalysis.existsType(this.get_type())) {
-            semanticsAnalysis.semantError(this).printf("Undefined type %s in formal %s.\n", this.get_type(), this.name);
+            semanticsAnalysis.semantError(this).printf("Class %s of formal parameter %s is undefined.\n", this.get_type(), this.name);
         }
     }
 }
@@ -836,7 +864,6 @@ class assign extends Expression {
         Optional<AbstractSymbol> type = semanticsAnalysis.lookupType(name);
         if(type.isEmpty()) {
             semanticsAnalysis.semantError(this).printf("Undeclared identifier %s.\n", name);
-            return;
         }
         set_type(type.get());
         expr.inferType(semanticsAnalysis);
@@ -857,8 +884,8 @@ class assign extends Expression {
 class static_dispatch extends Expression {
     protected Expression expr;
     protected AbstractSymbol type_name;
-    protected AbstractSymbol name;
-    protected Expressions actual;
+    protected AbstractSymbol method_name;
+    protected Expressions params;
 
     /**
      * Creates "static_dispatch" AST node.
@@ -866,27 +893,27 @@ class static_dispatch extends Expression {
      * @param lineNumber the line in the source file from which this node came.
      * @param a1         initial value for expr
      * @param a2         initial value for type_name
-     * @param a2         initial value for name
-     * @param a3         initial value for actual
+     * @param a3         initial value for name
+     * @param a4         initial value for params
      */
     public static_dispatch(int lineNumber, Expression a1, AbstractSymbol a2, AbstractSymbol a3, Expressions a4) {
         super(lineNumber);
         expr = a1;
         type_name = a2;
-        name = a3;
-        actual = a4;
+        method_name = a3;
+        params = a4;
     }
 
     public TreeNode copy() {
-        return new static_dispatch(lineNumber, (Expression) expr.copy(), copy_AbstractSymbol(type_name), copy_AbstractSymbol(name), (Expressions) actual.copy());
+        return new static_dispatch(lineNumber, (Expression) expr.copy(), copy_AbstractSymbol(type_name), copy_AbstractSymbol(method_name), (Expressions) params.copy());
     }
 
     public void dump(PrintStream out, int n) {
         out.print(Utilities.pad(n) + "static_dispatch\n");
         expr.dump(out, n + 2);
         dump_AbstractSymbol(out, n + 2, type_name);
-        dump_AbstractSymbol(out, n + 2, name);
-        actual.dump(out, n + 2);
+        dump_AbstractSymbol(out, n + 2, method_name);
+        params.dump(out, n + 2);
     }
 
 
@@ -895,9 +922,9 @@ class static_dispatch extends Expression {
         out.println(Utilities.pad(n) + "_static_dispatch");
         expr.dump_with_types(out, n + 2);
         dump_AbstractSymbol(out, n + 2, type_name);
-        dump_AbstractSymbol(out, n + 2, name);
+        dump_AbstractSymbol(out, n + 2, method_name);
         out.println(Utilities.pad(n + 2) + "(");
-        for (Enumeration e = actual.getElements(); e.hasMoreElements(); ) {
+        for (Enumeration e = params.getElements(); e.hasMoreElements(); ) {
             ((Expression) e.nextElement()).dump_with_types(out, n + 2);
         }
         out.println(Utilities.pad(n + 2) + ")");
@@ -906,9 +933,35 @@ class static_dispatch extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-
+        if (!semanticsAnalysis.existsTypeButNotSelfType(type_name)) {
+            semanticsAnalysis.semantError(this)
+                    .printf("Static dispatch to undefined class %s.\n", type_name);
+            return;
+        }
+        if (type_name == TreeConstants.SELF_TYPE) {
+            semanticsAnalysis.semantError(this).println("Static dispatch to TreeConstants.SELF_TYPE.");
+            return;
+        }
+        expr.inferType(semanticsAnalysis);
+        if(!semanticsAnalysis.conformance(expr.get_type(), type_name))
+            semanticsAnalysis.semantError(this)
+                    .printf("Expression type %s does not conform to declared static dispatch type %s.\n", expr.get_type(), type_name);
+        class_c class_c = semanticsAnalysis.findType(type_name);
+        Optional<method> method = semanticsAnalysis.lookupMethod(class_c, method_name);
+        if (method.isEmpty()) {
+            semanticsAnalysis.semantError(this).printf("Static dispatch to undefined method %s.\n", method_name);
+            return;
+        }
+        Optional<AbstractSymbol> symbol = method.get().checkParams(semanticsAnalysis, this, params);
+        if (symbol.isEmpty()) {
+            return;
+        }
+        if (symbol.get() == TreeConstants.SELF_TYPE) {
+            set_type(expr.get_type());
+            return;
+        }
+        set_type(expr.get_type());
     }
-
 }
 
 
@@ -1067,7 +1120,6 @@ class loop extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-
     }
 
 }

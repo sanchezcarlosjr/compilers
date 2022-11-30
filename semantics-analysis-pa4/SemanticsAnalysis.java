@@ -281,8 +281,7 @@ class SemanticsAnalysis {
     }
 
 
-    public Optional<Feature> lookupTypeInParents(AbstractSymbol name) {
-        class_c node = current_class;
+    public Optional<Feature> lookupFeature(class_c node, AbstractSymbol name) {
         while (node != null) {
             if (node.getFeatures().hasFeature(name)) {
                 return node.getFeatures().probe(name);
@@ -292,14 +291,27 @@ class SemanticsAnalysis {
         return Optional.empty();
     }
 
+    public Optional<method> lookupMethod(class_c node, AbstractSymbol name) {
+        Optional<Feature> feature = lookupFeature(node, name);
+        if (feature.isPresent() && feature.get() instanceof method)
+             return Optional.of((method) feature.get());
+        return Optional.empty();
+    }
     public Optional<AbstractSymbol> lookupType(AbstractSymbol name) {
+        return lookupType(name, current_class);
+    }
+    public Optional<AbstractSymbol> lookupType(AbstractSymbol name, class_c class_c) {
         Optional<TreeNode> node = symbolTable.lookup(name);
-        return node.map(TreeNode::get_type).or(() -> lookupTypeInParents(name).map(TreeNode::get_type));
+        return node.map(TreeNode::get_type).or(() -> lookupFeature(class_c, name).map(TreeNode::get_type));
     }
 
-    private class_c findType(AbstractSymbol type) {
+    public class_c findType(AbstractSymbol type) {
         if (type == TreeConstants.SELF_TYPE)
             return current_class;
+        return typeTable.get(type);
+    }
+
+    public class_c findTypeButNoSelfType(AbstractSymbol type) {
         return typeTable.get(type);
     }
 
@@ -312,6 +324,8 @@ class SemanticsAnalysis {
     public boolean conformance(AbstractSymbol typePrime, AbstractSymbol type) {
         if (typePrime == TreeConstants.No_type || type == TreeConstants.Object_)
             return true;
+        if (!this.typeTable.containsKey(typePrime))
+            return false;
         class_c node = findType(typePrime);
         class_c parent = typeTable.get(type);
         while (!Objects.equals(node.name, TreeConstants.Object_)) {
@@ -325,6 +339,10 @@ class SemanticsAnalysis {
 
     public boolean existsType(AbstractSymbol type) {
         return this.typeTable.containsKey(type) || type == TreeConstants.SELF_TYPE;
+    }
+
+    public boolean existsTypeButNotSelfType(AbstractSymbol type) {
+        return this.typeTable.containsKey(type);
     }
 
 }
