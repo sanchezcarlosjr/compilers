@@ -12,7 +12,7 @@ Your directory should now contain the following files:
  AbstractSymbol.java
  AbstractTable.java
  BoolConst.java
- ClassTable.java
+ SemanticsAnalysis.java
  Flags.java
  IdSymbol.java
  IdTable.java
@@ -83,7 +83,7 @@ Your directory should now contain the following files:
         the type-checking rules.  The entry point to the semantic
         analyzer is program.semant().  EDIT AND SUBMIT cool-tree.java.
 
-	ClassTable.java implements a placeholder class for a few useful
+	SemanticsAnalysis.java implements a placeholder class for a few useful
 	methods.  Feel free to extend it to implement some real data
 	strucutre.
 
@@ -191,7 +191,7 @@ Instructions
         % submit PA4
         
 	Be sure to submit the files cool-tree.java,
-	ClassTable.java, TreeConstants.java, good.cl, bad.cl,
+	SemanticsAnalysis.java, TreeConstants.java, good.cl, bad.cl,
 	good.output, bad.output, and README. Don't forget to edit the
 	README file to include your write-up, and to write your own test
 	cases in good.cl and bad.cl.
@@ -205,7 +205,46 @@ Instructions
 
 Write-up for PA4
 ----------------
-Since we have to check inheritance SymbolTable, we enter scope with classes and build symbol table where first scope are classes.
-Then, we build the rest scopes.
+# Requirements
+[] We must follow the requirement that errors don't cause the analyzes stops.
+
+# Types
+Types have attributes. In COOL, some types are classes, program, expressions.
+We stop the transversal tree process when we lies with foundational types (Int, String, Object, Boolean).
+A function is a type. Its attribute is its signature.
+Arithmetic operations are functions.
+Attributes have visibility or scope. We follow the de facto standard public, private, protected, internal.
+"Public" means that the type is instantiable or callable by other types.
+"Private" means that the type is not instantiable or callable by other types.
+"Protected" means that the type is instantiable by children in inheritance hierarchy.
+"Internal" means that the type is only instantiable by the current module.
+
+We list types and their visibility by the COOL specification.
+* Program, Formal, and Expressions are internal.
+* Classes and Methods are public. A class can dispatch attrs and methods.
+* Attrs are protected.  Inherited attributes cannot be redefined, but they are visible.
+
+So, classes, methods, and attrs are first in Symbol Table with its visibility.
 
 
+Tasks.
+[x] Identify classes and their inheritances.
+We implement a BFS flyweight to check classes and their inheritances.
+TODO: Remove if statements.
+[] How can I check scopes? How can I check types?
+Java is an OOP language, so we implement the Composite design pattern in order to traverse AST —Recursive structure.
+```Algorithm.
+save classes, and their features in symbol table
+for class in classes
+    class.check() # class.check() -> features.check() -> methods.check() attributes.check() -> formals.check() expressions.check()
+```
+
+Dispatches:
+* <expr>.<id>(<expr>,...,<expr>)
+* <id>(<expr>,...,<expr>)
+* <id>(<expr>,...,<expr>)
+
+[] Check self type
+
+
+Cum Romae fueritis, Romano vivite more.

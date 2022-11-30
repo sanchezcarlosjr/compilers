@@ -9,7 +9,7 @@
 
 import java.io.PrintStream;
 import java.util.Enumeration;
-import java.util.Objects;
+import java.util.Hashtable;
 import java.util.Vector;
 
 
@@ -100,7 +100,11 @@ abstract class Feature extends TreeNode {
 
     public abstract void dump_with_types(PrintStream out, int n);
 
-    public abstract void checkScope(AbstractSymbol filename, ClassTable classTable);
+    public void buildSymbolTable(class_c class_c, SemanticsAnalysis semanticsAnalysis) {
+    }
+    public abstract AbstractSymbol getName();
+
+    public abstract void error_by_multiple_definitions(PrintStream stream);
 }
 
 
@@ -111,6 +115,7 @@ abstract class Feature extends TreeNode {
  */
 class Features extends ListNode {
     public final static Class elementClass = Feature.class;
+    private Hashtable<AbstractSymbol, Feature> table = new Hashtable<>();
 
     protected Features(int lineNumber, Vector elements) {
         super(lineNumber, elements);
@@ -140,6 +145,23 @@ class Features extends ListNode {
 
     public TreeNode copy() {
         return new Features(lineNumber, copyElements());
+    }
+
+    private void save(Feature feature, class_c class_c, SemanticsAnalysis semanticsAnalysis) {
+        if (table.containsKey(feature.getName())) {
+            feature.error_by_multiple_definitions(semanticsAnalysis.semantError(class_c.filename, feature));
+            return;
+        }
+        table.put(feature.getName(), feature);
+    }
+
+    public void buildSymbolTable(class_c class_c, SemanticsAnalysis semanticsAnalysis) {
+        children().forEach((child) -> {
+            save(((Feature) child), class_c, semanticsAnalysis);
+        });
+    }
+    public boolean hasMethod(AbstractSymbol feature) {
+        return this.table.containsKey(feature) && this.table.get(feature).getClass().getName().equals("method");
     }
 }
 
@@ -226,7 +248,7 @@ abstract class Expression extends TreeNode {
         }
     }
 
-    public abstract void checkScope(AbstractSymbol filename, ClassTable classTable);
+    public void checkScope(AbstractSymbol filename, SemanticsAnalysis semanticsAnalysis) {}
 }
 
 
@@ -335,7 +357,7 @@ class programc extends Program {
      * Creates "programc" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for classes
+     * @param a1         initial value for classes
      */
     public programc(int lineNumber, Classes a1) {
         super(lineNumber);
@@ -377,17 +399,12 @@ class programc extends Program {
      * to test the complete compiler.
      */
     public void semant() {
-        ClassTable semanticsAnalysis = new ClassTable(classes);
+        SemanticsAnalysis semanticsAnalysis = new SemanticsAnalysis(classes);
         /* Semantic analysis. Order is important! */
         semanticsAnalysis.buildSymbolTable();
         semanticsAnalysis.checkThatTheInheritanceGraphIsWellFormed();
-        semanticsAnalysis.checkMainClass();
-        semanticsAnalysis.checkScope();
-
-        if (semanticsAnalysis.errors()) {
-            System.err.println("Compilation halted due to static semantic errors.");
-            System.exit(1);
-        }
+        semanticsAnalysis.checkEntrypoint();
+        semanticsAnalysis.throwErrorIfThereIsSomeone();
     }
 
 }
@@ -408,10 +425,10 @@ class class_c extends Class_ {
      * Creates "class_c" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for name
-     * @param a1         initial value for parent
-     * @param a2         initial value for features
-     * @param a3         initial value for filename
+     * @param a1         initial value for name
+     * @param a2         initial value for parent
+     * @param a3         initial value for features
+     * @param a4         initial value for filename
      */
     public class_c(int lineNumber, AbstractSymbol a1, AbstractSymbol a2, Features a3, AbstractSymbol a4) {
         super(lineNumber);
@@ -463,31 +480,14 @@ class class_c extends Class_ {
     public Features getFeatures() {
         return features;
     }
-
-    public void checkScope(ClassTable classTable) {
-        classTable.getSymbolTable().enterScope();
-        for (Enumeration e = features.getElements(); e.hasMoreElements(); ) {
-            Feature feature = (Feature) e.nextElement();
-            feature.checkScope(filename, classTable);
-        }
-        if(
-               name.equals(TreeConstants.Main) &&
-                        ( classTable.getSymbolTable().probe(TreeConstants.main_meth).isEmpty() ||
-                                !classTable.getSymbolTable().probe(TreeConstants.main_meth).get().getClass().getName().equals("method")
-                        )
-        ) {
-            classTable.semantError(this.filename, this).printf("No '%s' method in class %s.\n", TreeConstants.main_meth, TreeConstants.Main);
-        }
-        if(
-                name.equals(TreeConstants.Main) &&
-                        classTable.getSymbolTable().probe(TreeConstants.main_meth).isPresent() &&
-                        classTable.getSymbolTable().probe(TreeConstants.main_meth).get().getClass().getName().equals("method") &&
-                        ((method) classTable.getSymbolTable().probe(TreeConstants.main_meth).get()).formals.getLength() > 0
-        ) {
-            classTable.semantError(this.filename, this).printf("'%s' method in class %s should have no arguments.\n", TreeConstants.main_meth, TreeConstants.Main);
-        }
-        classTable.getSymbolTable().enterScope();
+    public void buildSymbolTable(SemanticsAnalysis semanticsAnalysis) {
+        semanticsAnalysis.insertSymbolOnCurrentScope(this);
+        this.features.buildSymbolTable(this, semanticsAnalysis);
     }
+    public void error_by_multiple_definitions(PrintStream stream) {
+        stream.printf("Class %s was previously defined.\n", name);
+    }
+
 }
 
 
@@ -506,8 +506,8 @@ class method extends Feature {
      * Creates "method" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for name
-     * @param a1         initial value for formals
+     * @param a1         initial value for name
+     * @param a2         initial value for formals
      * @param a2         initial value for return_type
      * @param a3         initial value for expr
      */
@@ -531,6 +531,9 @@ class method extends Feature {
         expr.dump(out, n + 2);
     }
 
+    public void buildSymbolTable(class_c class_c, SemanticsAnalysis semanticsAnalysis) {
+        super.buildSymbolTable(class_c, semanticsAnalysis);
+    }
 
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
@@ -544,19 +547,13 @@ class method extends Feature {
     }
 
     @Override
-    public void checkScope(AbstractSymbol filename, ClassTable classTable) {
-        classTable.getSymbolTable().addId(this.name, this);
-        classTable.getSymbolTable().enterScope();
-        for (Enumeration e = formals.getElements(); e.hasMoreElements(); ) {
-            formalc formal = (formalc) e.nextElement();
-            if (classTable.getSymbolTable().probe(formal.name).isPresent()) {
-                classTable.semantError(filename, formal).printf("Formal parameter %s is multiply defined.\n", formal.name);
-            } else {
-                classTable.getSymbolTable().addId(formal.name, formal);
-            }
-        }
-        expr.checkScope(filename, classTable);
-        classTable.getSymbolTable().exitScope();
+    public AbstractSymbol getName() {
+        return this.name;
+    }
+
+    @Override
+    public void error_by_multiple_definitions(PrintStream stream) {
+        stream.printf("Method %s is multiply defined.\n", name);
     }
 
 }
@@ -576,8 +573,8 @@ class attr extends Feature {
      * Creates "attr" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for name
-     * @param a1         initial value for type_decl
+     * @param a1         initial value for name
+     * @param a2         initial value for type_decl
      * @param a2         initial value for init
      */
     public attr(int lineNumber, AbstractSymbol a1, AbstractSymbol a2, Expression a3) {
@@ -606,10 +603,14 @@ class attr extends Feature {
         dump_AbstractSymbol(out, n + 2, type_decl);
         init.dump_with_types(out, n + 2);
     }
+    @Override
+    public AbstractSymbol getName() {
+        return this.name;
+    }
 
     @Override
-    public void checkScope(AbstractSymbol filename, ClassTable classTable) {
-
+    public void error_by_multiple_definitions(PrintStream stream) {
+        stream.printf("Attribute %s is multiply defined.\n", name);
     }
 
 }
@@ -628,8 +629,8 @@ class formalc extends Formal {
      * Creates "formalc" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for name
-     * @param a1         initial value for type_decl
+     * @param a1         initial value for name
+     * @param a2         initial value for type_decl
      */
     public formalc(int lineNumber, AbstractSymbol a1, AbstractSymbol a2) {
         super(lineNumber);
@@ -672,8 +673,8 @@ class branch extends Case {
      * Creates "branch" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for name
-     * @param a1         initial value for type_decl
+     * @param a1         initial value for name
+     * @param a2         initial value for type_decl
      * @param a2         initial value for expr
      */
     public branch(int lineNumber, AbstractSymbol a1, AbstractSymbol a2, Expression a3) {
@@ -719,8 +720,8 @@ class assign extends Expression {
      * Creates "assign" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for name
-     * @param a1         initial value for expr
+     * @param a1         initial value for name
+     * @param a2         initial value for expr
      */
     public assign(int lineNumber, AbstractSymbol a1, Expression a2) {
         super(lineNumber);
@@ -765,8 +766,8 @@ class static_dispatch extends Expression {
      * Creates "static_dispatch" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for expr
-     * @param a1         initial value for type_name
+     * @param a1         initial value for expr
+     * @param a2         initial value for type_name
      * @param a2         initial value for name
      * @param a3         initial value for actual
      */
@@ -822,8 +823,8 @@ class dispatch extends Expression {
      * Creates "dispatch" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for expr
-     * @param a1         initial value for name
+     * @param a1         initial value for expr
+     * @param a2         initial value for name
      * @param a2         initial value for actual
      */
     public dispatch(int lineNumber, Expression a1, AbstractSymbol a2, Expressions a3) {
@@ -875,8 +876,8 @@ class cond extends Expression {
      * Creates "cond" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for pred
-     * @param a1         initial value for then_exp
+     * @param a1         initial value for pred
+     * @param a2         initial value for then_exp
      * @param a2         initial value for else_exp
      */
     public cond(int lineNumber, Expression a1, Expression a2, Expression a3) {
@@ -923,8 +924,8 @@ class loop extends Expression {
      * Creates "loop" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for pred
-     * @param a1         initial value for body
+     * @param a1         initial value for pred
+     * @param a2         initial value for body
      */
     public loop(int lineNumber, Expression a1, Expression a2) {
         super(lineNumber);
@@ -967,8 +968,8 @@ class typcase extends Expression {
      * Creates "typcase" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for expr
-     * @param a1         initial value for cases
+     * @param a1         initial value for expr
+     * @param a2         initial value for cases
      */
     public typcase(int lineNumber, Expression a1, Cases a2) {
         super(lineNumber);
@@ -1012,7 +1013,7 @@ class block extends Expression {
      * Creates "block" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for body
+     * @param a1         initial value for body
      */
     public block(int lineNumber, Expressions a1) {
         super(lineNumber);
@@ -1056,8 +1057,8 @@ class let extends Expression {
      * Creates "let" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for identifier
-     * @param a1         initial value for type_decl
+     * @param a1         initial value for identifier
+     * @param a2         initial value for type_decl
      * @param a2         initial value for init
      * @param a3         initial value for body
      */
@@ -1108,7 +1109,7 @@ class plus extends Expression {
      * Creates "plus" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for e1
+     * @param a1         initial value for e1
      * @param a1         initial value for e2
      */
     public plus(int lineNumber, Expression a1, Expression a2) {
@@ -1152,7 +1153,7 @@ class sub extends Expression {
      * Creates "sub" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for e1
+     * @param a1         initial value for e1
      * @param a1         initial value for e2
      */
     public sub(int lineNumber, Expression a1, Expression a2) {
@@ -1196,7 +1197,7 @@ class mul extends Expression {
      * Creates "mul" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for e1
+     * @param a1         initial value for e1
      * @param a1         initial value for e2
      */
     public mul(int lineNumber, Expression a1, Expression a2) {
@@ -1240,7 +1241,7 @@ class divide extends Expression {
      * Creates "divide" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for e1
+     * @param a1         initial value for e1
      * @param a1         initial value for e2
      */
     public divide(int lineNumber, Expression a1, Expression a2) {
@@ -1283,7 +1284,7 @@ class neg extends Expression {
      * Creates "neg" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for e1
+     * @param a1         initial value for e1
      */
     public neg(int lineNumber, Expression a1) {
         super(lineNumber);
@@ -1323,7 +1324,7 @@ class lt extends Expression {
      * Creates "lt" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for e1
+     * @param a1         initial value for e1
      * @param a1         initial value for e2
      */
     public lt(int lineNumber, Expression a1, Expression a2) {
@@ -1367,7 +1368,7 @@ class eq extends Expression {
      * Creates "eq" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for e1
+     * @param a1         initial value for e1
      * @param a1         initial value for e2
      */
     public eq(int lineNumber, Expression a1, Expression a2) {
@@ -1411,7 +1412,7 @@ class leq extends Expression {
      * Creates "leq" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for e1
+     * @param a1         initial value for e1
      * @param a1         initial value for e2
      */
     public leq(int lineNumber, Expression a1, Expression a2) {
@@ -1454,7 +1455,7 @@ class comp extends Expression {
      * Creates "comp" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for e1
+     * @param a1         initial value for e1
      */
     public comp(int lineNumber, Expression a1) {
         super(lineNumber);
@@ -1493,7 +1494,7 @@ class int_const extends Expression {
      * Creates "int_const" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for token
+     * @param a1         initial value for token
      */
     public int_const(int lineNumber, AbstractSymbol a1) {
         super(lineNumber);
@@ -1532,7 +1533,7 @@ class bool_const extends Expression {
      * Creates "bool_const" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for val
+     * @param a1         initial value for val
      */
     public bool_const(int lineNumber, Boolean a1) {
         super(lineNumber);
@@ -1571,7 +1572,7 @@ class string_const extends Expression {
      * Creates "string_const" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for token
+     * @param a1         initial value for token
      */
     public string_const(int lineNumber, AbstractSymbol a1) {
         super(lineNumber);
@@ -1612,7 +1613,7 @@ class new_ extends Expression {
      * Creates "new_" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for type_name
+     * @param a1         initial value for type_name
      */
     public new_(int lineNumber, AbstractSymbol a1) {
         super(lineNumber);
@@ -1651,7 +1652,7 @@ class isvoid extends Expression {
      * Creates "isvoid" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for e1
+     * @param a1         initial value for e1
      */
     public isvoid(int lineNumber, Expression a1) {
         super(lineNumber);
@@ -1723,7 +1724,7 @@ class object extends Expression {
      * Creates "object" AST node.
      *
      * @param lineNumber the line in the source file from which this node came.
-     * @param a0         initial value for name
+     * @param a1         initial value for name
      */
     public object(int lineNumber, AbstractSymbol a1) {
         super(lineNumber);

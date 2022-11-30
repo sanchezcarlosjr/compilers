@@ -25,19 +25,20 @@ import java.io.PrintStream;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * This class may be used to contain the semantic information such as
  * the inheritance graph.  You may use it or not as you like: it is only
  * here to provide a container for the supplied methods.
  */
-class ClassTable {
+class SemanticsAnalysis {
     private final Classes classes;
     private final PrintStream errorStream;
     private final SymbolTable symbolTable = new SymbolTable();
     private int semanticsErrors;
 
-    public ClassTable(Classes cls) {
+    public SemanticsAnalysis(Classes cls) {
         semanticsErrors = 0;
         errorStream = System.err;
         symbolTable.enterScope();
@@ -45,24 +46,22 @@ class ClassTable {
         this.installBasicClasses();
     }
 
-    // NOT TO BE INCLUDED IN SKELETON
-    public static void main(String[] args) {
-        new ClassTable(null).installBasicClasses();
-    }
-
     public SymbolTable getSymbolTable() {
         return symbolTable;
     }
 
-    public void buildSymbolTable() {
-        for (Enumeration e = this.classes.getElements(); e.hasMoreElements(); ) {
-            class_c class_ = (class_c) e.nextElement();
-            if (symbolTable.lookup(class_.getName()).isPresent()) {
-                semantError(class_).printf("Class %s was previously defined.\n", class_.getName());
-            } else {
-                symbolTable.addId(class_.getName(), class_);
-            }
+    public void insertSymbolOnCurrentScope(class_c class_c) {
+        if (symbolTable.lookup(class_c.getName()).isPresent()) {
+            class_c.error_by_multiple_definitions(semantError(class_c));
+            return;
         }
+        symbolTable.addId(class_c.getName(), class_c);
+    }
+
+    public void buildSymbolTable() {
+        this.classes.children().forEach((class_c) -> {
+            ((class_c) class_c).buildSymbolTable(this);
+        });
     }
 
     public void checkThatTheInheritanceGraphIsWellFormed() {
@@ -102,15 +101,20 @@ class ClassTable {
         }
     }
 
-    public void checkScope() {
-        for (Enumeration e = this.classes.getElements(); e.hasMoreElements(); ) {
-            class_c class_ = (class_c) e.nextElement();
-            class_.checkScope(this);
+    public boolean checkEntrypointMethod() {
+        Optional<Object> optionalMain = symbolTable.lookup(TreeConstants.Main);
+        if (optionalMain.isEmpty()) {
+            return false;
         }
+        class_c main = (class_c) optionalMain.get();
+        if (!main.getFeatures().hasMethod(TreeConstants.main_meth)) {
+            semantError(main).printf("No '%s' method in class %s.\n", TreeConstants.main_meth, main.getName());
+        }
+        return true;
     }
 
-    public void checkMainClass() {
-        if (symbolTable.lookup(TreeConstants.Main).isPresent()) {
+    public void checkEntrypoint() {
+        if (checkEntrypointMethod()) {
             return;
         }
         AbstractSymbol filename = AbstractTable.stringtable.addString("<basic class>");
@@ -225,6 +229,19 @@ class ClassTable {
     public boolean errors() {
         return semanticsErrors != 0;
     }
+
+    public void throwErrorIfThereIsSomeone() {
+        if (errors()) {
+            System.err.println("Compilation halted due to static semantic errors.");
+            System.exit(1);
+        }
+    }
+
+    // NOT TO BE INCLUDED IN SKELETON
+    public static void main(String[] args) {
+        new SemanticsAnalysis(null).installBasicClasses();
+    }
+
 }
 			  
     

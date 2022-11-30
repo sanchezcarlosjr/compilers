@@ -77,9 +77,9 @@ import java.util.Enumeration;
 */
     
 abstract class ListNode extends TreeNode {
-    private Vector elements;
+    private final Vector<TreeNode> elements;
 
-    protected ListNode(int lineNumber, Vector elements) {
+    protected ListNode(int lineNumber, Vector<TreeNode> elements) {
 	super(lineNumber);
 	this.elements = elements;
     }
@@ -136,7 +136,11 @@ abstract class ListNode extends TreeNode {
      * @return the elements
      * */
     public Enumeration getElements() {
-	return elements.elements();
+        return elements.elements();
+    }
+
+    public Vector<TreeNode> children() {
+        return elements;
     }
 
     /** Appends an element to the list.
@@ -149,7 +153,7 @@ abstract class ListNode extends TreeNode {
      * @param elem a node to append
      * */
     public void addElement(TreeNode node) {
-	elements.addElement(node);
+        elements.addElement(node);
     }
 
     /** Pretty-prints this list to this output stream.

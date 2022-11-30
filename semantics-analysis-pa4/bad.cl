@@ -1,8 +1,3 @@
-class Main { main() : Object {0}; };
+class Main { main2() : Object {0}; };
 
-class A {
-    x: Int;
-    x: Int;
-    x(b:Object, x:Int) : String { "moo" };
-    x(b:Object, x:Int) : String { "moo" };
-};
+class Main2 { main() : Object {0}; };

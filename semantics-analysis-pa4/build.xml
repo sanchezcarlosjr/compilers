@@ -9,7 +9,7 @@
   <property name="assn" value="4"/>
   <property name="class" value="cs164"/>
 
-  <property name="src" value="ClassTable.java TreeConstants.java cool-tree.java good.cl bad.cl README"/>
+  <property name="src" value="SemanticsAnalysis.java TreeConstants.java cool-tree.java good.cl bad.cl README"/>
   <property name="csrc" value="ASTConstants.java ASTLexer.java ASTParser.java AbstractSymbol.java AbstractTable.java BoolConst.java Flags.java IdSymbol.java IdTable.java IntSymbol.java IntTable.java ListNode.java Semant.java StringSymbol.java StringTable.java CgenSupport.java SymbolTable.java SymtabExample.java TokenConstants.java TreeNode.java Utilities.java"/>
 
   <property name="cgen" value=""/>
@@ -55,8 +55,11 @@
     <exec executable="python2.7"> <arg line="compare-semant.py tests/bad3.test"/> </exec>
     <exec executable="python2.7"> <arg line="compare-semant.py tests/bad4.test"/> </exec>
     <exec executable="python2.7"> <arg line="compare-semant.py tests/bad5.test"/> </exec>
+    <exec executable="python2.7"> <arg line="compare-semant.py tests/feedback1.test"/> </exec>
+    <exec executable="python2.7"> <arg line="compare-semant.py tests/feedback2.test"/> </exec>
+    <exec executable="python2.7"> <arg line="compare-semant.py tests/feedback3.test"/> </exec>
     <echo>
-You can check 'tests/NAME.test.diff" to know more about a failed test case.
+          You can check 'tests/NAME.test.diff" to know more about a failed test case.
     </echo>
   </target>
 
