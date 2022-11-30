@@ -597,10 +597,10 @@ class method extends Feature {
         formals.children().forEach((formal) -> {
             formalc formalc = (formalc) formal;
             formalc.checkSelfType(semanticsAnalysis);
-            if (semanticsAnalysis.isPresentInCurrentScope(name)) {
+            if (semanticsAnalysis.isPresentInCurrentScope(formalc.name)) {
                 semanticsAnalysis.semantError(formalc).printf("Formal parameter %s is multiply defined.\n", formalc.name);
             }
-            semanticsAnalysis.addIdToCurrentScope(name, formalc);
+            semanticsAnalysis.addIdToCurrentScope(formalc.name, formalc);
         });
     }
 }
