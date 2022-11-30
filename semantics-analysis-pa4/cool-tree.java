@@ -84,12 +84,6 @@ class Classes extends ListNode {
     public TreeNode copy() {
         return new Classes(lineNumber, copyElements());
     }
-
-    public void inferType(SemanticsAnalysis semanticsAnalysis) {
-        children().forEach((child) -> {
-            ((class_c) child).inferType(semanticsAnalysis);
-        });
-    }
 }
 
 
@@ -103,13 +97,13 @@ abstract class Feature extends TreeNode {
 
     public abstract void dump_with_types(PrintStream out, int n);
 
-    public void buildSymbolTable(class_c class_c, SemanticsAnalysis semanticsAnalysis) {
+    public void buildSymbolTable(SemanticsAnalysis semanticsAnalysis) {
     }
     public abstract AbstractSymbol getName();
 
     public abstract void error_by_multiple_definitions(PrintStream stream);
 
-    public abstract void inferType(class_c class_c, SemanticsAnalysis semanticsAnalysis);
+    public abstract void inferType(SemanticsAnalysis semanticsAnalysis);
 }
 
 
@@ -152,25 +146,25 @@ class Features extends ListNode {
     public TreeNode copy() {
         return new Features(lineNumber, copyElements());
     }
-    public void save(method feature, class_c class_c, SemanticsAnalysis semanticsAnalysis) {
+    public void save(method feature, SemanticsAnalysis semanticsAnalysis) {
         if (methods.containsKey(feature.getName())) {
-            feature.error_by_multiple_definitions(semanticsAnalysis.semantError(class_c.filename, feature));
+            feature.error_by_multiple_definitions(semanticsAnalysis.semantError(feature));
             return;
         }
         methods.put(feature.getName(), feature);
     }
 
-    public void save(attr feature, class_c class_c, SemanticsAnalysis semanticsAnalysis) {
+    public void save(attr feature, SemanticsAnalysis semanticsAnalysis) {
         if (attributes.containsKey(feature.getName())) {
-            feature.error_by_multiple_definitions(semanticsAnalysis.semantError(class_c.filename, feature));
+            feature.error_by_multiple_definitions(semanticsAnalysis.semantError(feature));
             return;
         }
         attributes.put(feature.getName(), feature);
     }
 
-    public void buildSymbolTable(class_c class_c, SemanticsAnalysis semanticsAnalysis) {
+    public void buildSymbolTable(SemanticsAnalysis semanticsAnalysis) {
         children().forEach((child) -> {
-            ((Feature) child).buildSymbolTable(class_c, semanticsAnalysis);
+            ((Feature) child).buildSymbolTable(semanticsAnalysis);
         });
     }
     public boolean hasMethod(AbstractSymbol feature) {
@@ -183,9 +177,9 @@ class Features extends ListNode {
         return  Optional.of(methods.get(feature));
     }
 
-    public void inferType(class_c class_c, SemanticsAnalysis semanticsAnalysis) {
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
         children().forEach((child) -> {
-            ((Feature) child).inferType(class_c, semanticsAnalysis);
+            ((Feature) child).inferType(semanticsAnalysis);
         });
     }
 }
@@ -507,14 +501,14 @@ class class_c extends Class_ {
     }
     public void buildSymbolTable(SemanticsAnalysis semanticsAnalysis) {
         semanticsAnalysis.insertSymbolOnCurrentScope(this);
-        this.features.buildSymbolTable(this, semanticsAnalysis);
+        this.features.buildSymbolTable(semanticsAnalysis);
     }
     public void error_by_multiple_definitions(PrintStream stream) {
         stream.printf("Class %s was previously defined.\n", name);
     }
 
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-        this.features.inferType(this, semanticsAnalysis);
+        this.features.inferType(semanticsAnalysis);
     }
 }
 
@@ -559,8 +553,8 @@ class method extends Feature {
         expr.dump(out, n + 2);
     }
 
-    public void buildSymbolTable(class_c class_c, SemanticsAnalysis semanticsAnalysis) {
-        class_c.getFeatures().save(this, class_c, semanticsAnalysis);
+    public void buildSymbolTable(SemanticsAnalysis semanticsAnalysis) {
+        semanticsAnalysis.save(this);
     }
 
     public void dump_with_types(PrintStream out, int n) {
@@ -585,7 +579,7 @@ class method extends Feature {
     }
 
     @Override
-    public void inferType(class_c class_c, SemanticsAnalysis semanticsAnalysis) {
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
 
     }
 
@@ -628,8 +622,8 @@ class attr extends Feature {
         init.dump(out, n + 2);
     }
 
-    public void buildSymbolTable(class_c class_c, SemanticsAnalysis semanticsAnalysis) {
-        class_c.getFeatures().save(this, class_c, semanticsAnalysis);
+    public void buildSymbolTable(SemanticsAnalysis semanticsAnalysis) {
+        semanticsAnalysis.save(this);
     }
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
@@ -649,7 +643,7 @@ class attr extends Feature {
     }
 
     @Override
-    public void inferType(class_c class_c, SemanticsAnalysis semanticsAnalysis) {
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
 
     }
 

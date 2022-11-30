@@ -21,6 +21,8 @@ PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // This is a project skeleton file
 
+import com.sun.source.tree.Tree;
+
 import java.io.PrintStream;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -37,6 +39,8 @@ class SemanticsAnalysis {
     private final PrintStream errorStream;
     private final SymbolTable symbolTable = new SymbolTable();
     private int semanticsErrors;
+
+    private class_c current_class;
 
     public SemanticsAnalysis(Classes cls) {
         semanticsErrors = 0;
@@ -59,13 +63,17 @@ class SemanticsAnalysis {
     }
 
     public void buildSymbolTable() {
-        this.classes.children().forEach((class_c) -> {
-            ((class_c) class_c).buildSymbolTable(this);
+        this.classes.children().forEach((child) -> {
+            current_class = (class_c) child;
+            current_class.buildSymbolTable(this);
         });
     }
 
     public void inferType() {
-        this.classes.inferType(this);
+        this.classes.children().forEach((child) -> {
+            current_class = (class_c) child;
+            current_class.inferType(this);
+        });
     }
 
     public void checkThatTheInheritanceGraphIsWellFormed() {
@@ -200,6 +208,10 @@ class SemanticsAnalysis {
         return semantError(c.getFilename(), c);
     }
 
+    public PrintStream semantError(TreeNode treeNode) {
+        return semantError(current_class.getFilename(), treeNode);
+    }
+
     /**
      * Prints the file name and the line number of the given tree node.
      * <p>
@@ -246,6 +258,12 @@ class SemanticsAnalysis {
         new SemanticsAnalysis(null).installBasicClasses();
     }
 
+    public void save(method method) {
+        current_class.getFeatures().save(method, this);
+    }
+    public void save(attr attributes) {
+        current_class.getFeatures().save(attributes, this);
+    }
 }
 			  
     
