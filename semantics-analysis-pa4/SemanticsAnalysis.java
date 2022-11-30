@@ -298,6 +298,8 @@ class SemanticsAnalysis {
         return Optional.empty();
     }
     public Optional<AbstractSymbol> lookupType(AbstractSymbol name) {
+        if (name == TreeConstants.self)
+            return Optional.of(TreeConstants.SELF_TYPE);
         return lookupType(name, current_class);
     }
     public Optional<AbstractSymbol> lookupType(AbstractSymbol name, class_c class_c) {
@@ -319,10 +321,11 @@ class SemanticsAnalysis {
      *  We suppose previous inheritance verification.
      *
      * @return T' <= T  == T' is child of T or T' is T
+     *  SELF_TYPE <= X
      */
     //
     public boolean conformance(AbstractSymbol typePrime, AbstractSymbol type) {
-        if (typePrime == TreeConstants.No_type || type == TreeConstants.Object_)
+        if (typePrime == TreeConstants.No_type || type == TreeConstants.Object_ || typePrime == TreeConstants.SELF_TYPE)
             return true;
         if (!this.typeTable.containsKey(typePrime))
             return false;

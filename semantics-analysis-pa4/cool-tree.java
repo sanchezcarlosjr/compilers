@@ -960,7 +960,7 @@ class static_dispatch extends Expression {
             set_type(expr.get_type());
             return;
         }
-        set_type(expr.get_type());
+        set_type(symbol.get());
     }
 }
 
@@ -972,8 +972,8 @@ class static_dispatch extends Expression {
  */
 class dispatch extends Expression {
     protected Expression expr;
-    protected AbstractSymbol name;
-    protected Expressions actual;
+    protected AbstractSymbol method_name;
+    protected Expressions params;
 
     /**
      * Creates "dispatch" AST node.
@@ -986,19 +986,19 @@ class dispatch extends Expression {
     public dispatch(int lineNumber, Expression a1, AbstractSymbol a2, Expressions a3) {
         super(lineNumber);
         expr = a1;
-        name = a2;
-        actual = a3;
+        method_name = a2;
+        params = a3;
     }
 
     public TreeNode copy() {
-        return new dispatch(lineNumber, (Expression) expr.copy(), copy_AbstractSymbol(name), (Expressions) actual.copy());
+        return new dispatch(lineNumber, (Expression) expr.copy(), copy_AbstractSymbol(method_name), (Expressions) params.copy());
     }
 
     public void dump(PrintStream out, int n) {
         out.print(Utilities.pad(n) + "dispatch\n");
         expr.dump(out, n + 2);
-        dump_AbstractSymbol(out, n + 2, name);
-        actual.dump(out, n + 2);
+        dump_AbstractSymbol(out, n + 2, method_name);
+        params.dump(out, n + 2);
     }
 
 
@@ -1006,9 +1006,9 @@ class dispatch extends Expression {
         dump_line(out, n);
         out.println(Utilities.pad(n) + "_dispatch");
         expr.dump_with_types(out, n + 2);
-        dump_AbstractSymbol(out, n + 2, name);
+        dump_AbstractSymbol(out, n + 2, method_name);
         out.println(Utilities.pad(n + 2) + "(");
-        for (Enumeration e = actual.getElements(); e.hasMoreElements(); ) {
+        for (Enumeration e = params.getElements(); e.hasMoreElements(); ) {
             ((Expression) e.nextElement()).dump_with_types(out, n + 2);
         }
         out.println(Utilities.pad(n + 2) + ")");
@@ -1017,7 +1017,23 @@ class dispatch extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-
+        expr.inferType(semanticsAnalysis);
+        if (!semanticsAnalysis.existsType(expr.get_type()))
+            return;
+        Optional<method> method = semanticsAnalysis.lookupMethod(semanticsAnalysis.findType(expr.get_type()), method_name);
+        if (method.isEmpty()) {
+            semanticsAnalysis.semantError(this).printf("Dispatch to undefined method %s.\n", method_name);
+            return;
+        }
+        Optional<AbstractSymbol> symbol = method.get().checkParams(semanticsAnalysis, this, params);
+        if (symbol.isEmpty()) {
+            return;
+        }
+        if (symbol.get() == TreeConstants.SELF_TYPE) {
+            set_type(expr.get_type());
+            return;
+        }
+        set_type(symbol.get());
     }
 
 }

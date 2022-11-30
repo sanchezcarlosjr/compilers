@@ -1,0 +1,32 @@
+*** The reference
+
+--- Yours
+
+***************
+
+*** 19,29 ****
+
+            #
+            _int
+              5
+!           : Int
+            #
+            _object
+              x
+!           : Int
+!         : Int
+!       : Int
+      )
+--- 19,29 ----
+
+            #
+            _int
+              5
+!           : Object
+            #
+            _object
+              x
+!           : Object
+!         : Object
+!       : Object
+      )
