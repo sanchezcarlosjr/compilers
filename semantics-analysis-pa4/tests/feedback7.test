@@ -1,0 +1,4 @@
+class Main {
+   main() : Int {0};
+   f(x: Int, x: Int) : Int {0};
+};

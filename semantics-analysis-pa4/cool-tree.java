@@ -423,6 +423,7 @@ class programc extends Program {
         semanticsAnalysis.buildSymbolTable();
         semanticsAnalysis.checkThatTheInheritanceGraphIsWellFormed();
         semanticsAnalysis.checkEntrypoint();
+        semanticsAnalysis.inferType();
         semanticsAnalysis.throwErrorIfThereIsSomeone();
     }
 
@@ -580,9 +581,19 @@ class method extends Feature {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-
+        checkFormals(semanticsAnalysis);
     }
-
+    private void checkFormals(SemanticsAnalysis semanticsAnalysis) {
+        HashSet<AbstractSymbol> hashSet = new HashSet<>();
+        formals.children().forEach((formal) -> {
+            formalc formalc = (formalc) formal;
+            formalc.checkSelfType(semanticsAnalysis);
+            if (hashSet.contains(name)) {
+                semanticsAnalysis.semantError(formalc).printf("Formal parameter %s is multiply defined.\n", formalc.name);
+            }
+            hashSet.add(name);
+        });
+    }
 }
 
 
@@ -690,6 +701,11 @@ class formalc extends Formal {
         dump_AbstractSymbol(out, n + 2, type_decl);
     }
 
+    public void checkSelfType(SemanticsAnalysis semanticsAnalysis) {
+        if (type_decl == TreeConstants.SELF_TYPE) {
+            semanticsAnalysis.semantError(this).printf("Formal parameter %s cannot have type TreeConstants.SELF_TYPE.\n", name);
+        }
+    }
 }
 
 

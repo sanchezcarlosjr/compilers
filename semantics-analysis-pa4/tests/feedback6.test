@@ -1,0 +1,5 @@
+class Main {
+   x: SELF_TYPE;
+   main() : Int {0};
+   f(x: SELF_TYPE) : Int {0};
+};

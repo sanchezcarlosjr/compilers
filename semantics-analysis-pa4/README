@@ -239,12 +239,11 @@ We first build a table with attributes, methods, and classes.
 for class in classes
     class.buildSymbolTable() # class.buildSymbolTable() -> features.buildSymbolTable()
 ```
-We build a symbol table using semantics analysis.
-
-Dispatches:
-* <expr>.<id>(<expr>,...,<expr>)
-* <id>(<expr>,...,<expr>)
-* <id>(<expr>,...,<expr>)
+We build a symbol table using "SemanticsAnalysis" Java class and the current type environment (method, object, and the current class environment) is in it.
+```Algorithm inferType(semanticsAnalysis)
+for class in classes
+    class.inferType() # class.inferType() -> features.inferType() -> features.inferType() -> methods.inferType() attributes.inferType() -> ...
+```
 
 [] Check self type
 
