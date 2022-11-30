@@ -824,7 +824,16 @@ class assign extends Expression {
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
         Optional<AbstractSymbol> type = semanticsAnalysis.lookupType(name);
+        if(type.isEmpty()) {
+            semanticsAnalysis.semantError(this).printf("Undeclared identifier %s.\n", name);
+            return;
+        }
+        set_type(type.get());
         expr.inferType(semanticsAnalysis);
+        if (!semanticsAnalysis.conformance(expr.get_type(),get_type())) {
+            semanticsAnalysis.semantError(this)
+                    .printf("Inferred type %s of initialization of attribute %s does not conform to declared type %s.\n", expr.get_type(), name, get_type());
+        }
     }
 
 }

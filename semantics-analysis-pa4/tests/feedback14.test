@@ -1,0 +1,10 @@
+class Y {
+   y: SELF_TYPE;
+};
+
+
+class Main inherits Y {
+   main() : Main {
+       y
+   };
+};

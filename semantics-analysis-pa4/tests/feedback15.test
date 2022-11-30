@@ -1,0 +1,9 @@
+class Main {
+   y: Int;
+   main(): Object {
+       {
+          y <- 0;
+          let y: String in 4;
+       }
+   };
+};

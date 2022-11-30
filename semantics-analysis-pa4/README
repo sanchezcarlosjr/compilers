@@ -226,6 +226,12 @@ We list types and their visibility by the COOL specification.
 
 So, classes, methods, and attrs are first in Symbol Table with its visibility.
 
+Types (tree node) that enter new scopes are:
+* Program
+* Class
+* Method
+* Let
+
 
 Tasks.
 [x] Identify classes and their inheritances.
@@ -247,6 +253,8 @@ for class in classes
 O environment is semanticsAnalysis.lookupType() It searches on current scope, features and parents.
 
 
-[] Check self type
+
+[x] Tests
+We've added custom tests called feedback\d.test where \d means a natural number.
 
 
