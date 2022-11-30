@@ -171,10 +171,16 @@ class Features extends ListNode {
         return this.methods.containsKey(feature);
     }
 
-    public Optional<method> probe(AbstractSymbol feature) {
-        if (!hasMethod(feature))
-            return Optional.empty();
-        return  Optional.of(methods.get(feature));
+    public boolean hasAttribute(AbstractSymbol feature) {
+        return this.attributes.containsKey(feature);
+    }
+
+    public Optional<Feature> probe(AbstractSymbol feature) {
+        if (hasAttribute(feature))
+            return Optional.of(this.attributes.get(feature));
+        if (hasMethod(feature))
+            return  Optional.of(methods.get(feature));
+        return Optional.empty();
     }
 
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
@@ -182,6 +188,11 @@ class Features extends ListNode {
             ((Feature) child).inferType(semanticsAnalysis);
         });
     }
+
+    public boolean hasFeature(AbstractSymbol name) {
+        return hasMethod(name) || hasAttribute(name);
+    }
+
 }
 
 
@@ -804,7 +815,7 @@ class assign extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-        Optional<AbstractSymbol> type = semanticsAnalysis.lookup(name);
+        Optional<AbstractSymbol> type = semanticsAnalysis.lookupType(name);
         expr.inferType(semanticsAnalysis);
     }
 

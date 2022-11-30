@@ -34,25 +34,24 @@ class SymtabExample {
 
 	// add a couple of entries mapping name to age.
 	// note the second argument must be a pointer to an integer
-	map.addId(fred, new Integer(22));
-	map.addId(mary, new Integer(25));
+	map.addId(fred, new attr(5, fred, TreeConstants.Str, new no_expr(5)));
+	map.addId(mary, new attr(8, mary, TreeConstants.Int, new no_expr(9)));
 
 	// add a scope, add more names:
 	map.enterScope();
-	map.addId(miguel, new Integer(35));
-	map.addId(mary, new Integer(23));
+	map.addId(miguel, new attr(7, mary, TreeConstants.Int, new no_expr(9)));
 
 	// check whether Fred is in the current scope; predicate is false
-	System.out.println((map.probe(fred) != null) ? "Yes" : "No");
+	System.out.println((map.probe(fred).isPresent()) ? "Yes" : "No");
 	
 	// check whether Mary is in any scope; predicate is true
-	System.out.println((map.lookup(mary) != null) ? "Yes" : "No");
+	System.out.println((map.lookup(mary).isPresent()) ? "Yes" : "No");
 	
 	// print age of most-closely-nested Mary
 	System.out.println(map.lookup(mary));
 
 	// check whether Miguel is in the current scope; predicate is true
-	System.out.println((map.probe(miguel) != null) ? "Yes" : "No");
+	System.out.println((map.probe(miguel).isPresent()) ? "Yes" : "No");
 
 	// leave a scope
 	map.exitScope();
@@ -61,10 +60,10 @@ class SymtabExample {
 	System.out.println(map.lookup(mary));
 
 	// check whether Fred is in the current scope; predicate is now true
-	System.out.println((map.probe(fred) != null) ? "Yes" : "No");
+	System.out.println((map.probe(fred).isPresent()) ? "Yes" : "No");
 
 	// check whether Miguel is in any scope; predicate is now false
-	System.out.println((map.lookup(miguel) != null) ? "Yes" : "No");
+	System.out.println((map.lookup(miguel).isPresent()) ? "Yes" : "No");
     }	
 }
 

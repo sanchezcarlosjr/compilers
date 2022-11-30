@@ -60,13 +60,13 @@ import java.util.Stack;
  * @see SymtabExample
  */
 class SymbolTable {
-    private final Stack<Hashtable<AbstractSymbol, Object>> tbl;
+    private final Stack<Hashtable<AbstractSymbol, TreeNode>> tbl;
 
     /**
      * Creates an empty symbol table.
      */
     public SymbolTable() {
-        tbl = new Stack<Hashtable<AbstractSymbol, Object>>();
+        tbl = new Stack<Hashtable<AbstractSymbol, TreeNode>>();
     }
 
     /**
@@ -74,7 +74,7 @@ class SymbolTable {
      * can be added to the table.
      */
     public void enterScope() {
-		tbl.push(new Hashtable<AbstractSymbol, Object>());
+		tbl.push(new Hashtable<AbstractSymbol, TreeNode>());
     }
 
     /**
@@ -93,7 +93,7 @@ class SymbolTable {
      * @param id   the symbol
      * @param info the data associated with id
      */
-    public void addId(AbstractSymbol id, Object info) {
+    public void addId(AbstractSymbol id, TreeNode info) {
         if (tbl.empty()) {
             Utilities.fatalError("addId: can't add a symbol without a scope.");
         }
@@ -108,7 +108,7 @@ class SymbolTable {
      * @param sym the symbol
      * @return the info associated with sym, or null if not found
      */
-    public Optional<Object> lookup(AbstractSymbol sym) {
+    public Optional<TreeNode> lookup(AbstractSymbol sym) {
         if (tbl.empty()) {
             Utilities.fatalError("lookup: no scope in symbol table.");
         }
@@ -128,21 +128,12 @@ class SymbolTable {
      * @param sym the symbol
      * @return the info associated with sym, or null if not found
      */
-    public Optional<Object> probe(AbstractSymbol sym) {
+    public Optional<TreeNode> probe(AbstractSymbol sym) {
         if (tbl.empty()) {
             Utilities.fatalError("lookup: no scope in symbol table.");
         }
         if (tbl.peek().containsKey(sym))
             return Optional.of(tbl.peek().get(sym));
-        return Optional.empty();
-    }
-
-    public Optional<Object> probeBottomUp(AbstractSymbol sym) {
-        if (tbl.empty()) {
-            Utilities.fatalError("lookup: no scope in symbol table.");
-        }
-        if (tbl.elementAt(0).containsKey(sym))
-            return Optional.of(tbl.elementAt(0).get(sym));
         return Optional.empty();
     }
 

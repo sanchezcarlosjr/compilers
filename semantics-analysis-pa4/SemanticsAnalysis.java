@@ -110,20 +110,6 @@ class SemanticsAnalysis {
         }
     }
 
-
-    public boolean bfs(class_c node, class_c parent) {
-        if(!this.typeTable.containsKey(parent.getName())) {
-            return false;
-        }
-        while (!Objects.equals(node.getName(), TreeConstants.No_class)) {
-            if (node.getParent() == parent.getName()) {
-                return true;
-            }
-            node = this.typeTable.get(node.getParent());
-        }
-        return false;
-    }
-
     public boolean checkEntrypointMethod() {
         if (!typeTable.containsKey(TreeConstants.Main)) {
             return false;
@@ -294,13 +280,38 @@ class SemanticsAnalysis {
         this.symbolTable.exitScope();
     }
 
-    public Optional<AbstractSymbol> lookup(AbstractSymbol name) {
-        Optional<Object> type = symbolTable.lookup(name);
+
+    public Optional<Feature> lookupTypeInParents(AbstractSymbol name) {
+        class_c node = current_class;
+        while (!Objects.equals(node.getName(), TreeConstants.No_class)) {
+            if (node.getFeatures().hasFeature(name)) {
+                return node.getFeatures().probe(name);
+            }
+            node = this.typeTable.get(node.getParent());
+        }
         return Optional.empty();
     }
 
-    // T' <= T
+    public Optional<AbstractSymbol> lookupType(AbstractSymbol name) {
+        Optional<TreeNode> node = symbolTable.lookup(name);
+        return node.map(TreeNode::get_type).or(() -> lookupTypeInParents(name).map(TreeNode::get_type));
+    }
+
+    /**
+     *  We suppose previous inheritance verification.
+     *
+     * @return T' <= T
+     */
+    //
     public boolean isChild(AbstractSymbol typePrime, AbstractSymbol type) {
+        class_c node = typeTable.get(typePrime);
+        class_c parent = typeTable.get(type);
+        while (!Objects.equals(node.getName(), TreeConstants.No_class)) {
+            if (node.getParent() == parent.getName()) {
+                return true;
+            }
+            node = this.typeTable.get(node.getParent());
+        }
         return false;
     }
 
