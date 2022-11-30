@@ -232,12 +232,14 @@ Tasks.
 We implement a BFS flyweight to check classes and their inheritances.
 TODO: Remove if statements.
 [] How can I check scopes? How can I check types?
-Java is an OOP language, so we implement the Composite design pattern in order to traverse AST —Recursive structure.
-```Algorithm.
-save classes, and their features in symbol table
+Java is an OOP language, so we implement the Composite design pattern in order to traverse AST —Recursive structure. Cum Romae fueritis, Romano vivite more.
+
+We first build a table with attributes, methods, and classes.
+```Algorithm save classes, and their features in symbol table
 for class in classes
-    class.check() # class.check() -> features.check() -> methods.check() attributes.check() -> formals.check() expressions.check()
+    class.buildSymbolTable() # class.buildSymbolTable() -> features.buildSymbolTable()
 ```
+We build a symbol table using semantics analysis.
 
 Dispatches:
 * <expr>.<id>(<expr>,...,<expr>)
@@ -247,4 +249,3 @@ Dispatches:
 [] Check self type
 
 
-Cum Romae fueritis, Romano vivite more.

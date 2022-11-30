@@ -64,6 +64,10 @@ class SemanticsAnalysis {
         });
     }
 
+    public void inferType() {
+        this.classes.inferType(this);
+    }
+
     public void checkThatTheInheritanceGraphIsWellFormed() {
         HashSet<AbstractSymbol> set = new HashSet<>();
         for (Enumeration e = this.classes.getElements(); e.hasMoreElements(); ) {

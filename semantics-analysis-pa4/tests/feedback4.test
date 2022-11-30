@@ -3,5 +3,7 @@ class X {
 };
 
 class Main {
+   x: Int <- 0;
+   x: Int <- 0;
    main() : Int {0};
 };
