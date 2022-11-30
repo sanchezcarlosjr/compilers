@@ -268,6 +268,8 @@ abstract class Expression extends TreeNode {
     }
 
     public void checkScope(AbstractSymbol filename, SemanticsAnalysis semanticsAnalysis) {}
+
+    public abstract void inferType(SemanticsAnalysis semanticsAnalysis);
 }
 
 
@@ -584,6 +586,7 @@ class method extends Feature {
         semanticsAnalysis.enterScope();
         checkFormals(semanticsAnalysis);
         checkReturnType(semanticsAnalysis);
+        expr.inferType(semanticsAnalysis);
         semanticsAnalysis.exitScope();
     }
 
@@ -807,6 +810,11 @@ class assign extends Expression {
         dump_type(out, n);
     }
 
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+       
+    }
+
 }
 
 
@@ -865,6 +873,11 @@ class static_dispatch extends Expression {
         dump_type(out, n);
     }
 
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+       
+    }
+
 }
 
 
@@ -918,6 +931,11 @@ class dispatch extends Expression {
         dump_type(out, n);
     }
 
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+       
+    }
+
 }
 
 
@@ -967,6 +985,11 @@ class cond extends Expression {
         dump_type(out, n);
     }
 
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+       
+    }
+
 }
 
 
@@ -1009,6 +1032,11 @@ class loop extends Expression {
         pred.dump_with_types(out, n + 2);
         body.dump_with_types(out, n + 2);
         dump_type(out, n);
+    }
+
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+       
     }
 
 }
@@ -1057,6 +1085,11 @@ class typcase extends Expression {
         dump_type(out, n);
     }
 
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+       
+    }
+
 }
 
 
@@ -1096,6 +1129,11 @@ class block extends Expression {
             ((Expression) e.nextElement()).dump_with_types(out, n + 2);
         }
         dump_type(out, n);
+    }
+
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+       
     }
 
 }
@@ -1152,6 +1190,11 @@ class let extends Expression {
         dump_type(out, n);
     }
 
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+       
+    }
+
 }
 
 
@@ -1194,6 +1237,11 @@ class plus extends Expression {
         e1.dump_with_types(out, n + 2);
         e2.dump_with_types(out, n + 2);
         dump_type(out, n);
+    }
+
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+       
     }
 
 }
@@ -1240,6 +1288,11 @@ class sub extends Expression {
         dump_type(out, n);
     }
 
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+       
+    }
+
 }
 
 
@@ -1282,6 +1335,11 @@ class mul extends Expression {
         e1.dump_with_types(out, n + 2);
         e2.dump_with_types(out, n + 2);
         dump_type(out, n);
+    }
+
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+       
     }
 
 }
@@ -1328,6 +1386,11 @@ class divide extends Expression {
         dump_type(out, n);
     }
 
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+       
+    }
+
 }
 
 
@@ -1365,6 +1428,11 @@ class neg extends Expression {
         out.println(Utilities.pad(n) + "_neg");
         e1.dump_with_types(out, n + 2);
         dump_type(out, n);
+    }
+
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+       
     }
 
 }
@@ -1411,6 +1479,11 @@ class lt extends Expression {
         dump_type(out, n);
     }
 
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+       
+    }
+
 }
 
 
@@ -1453,6 +1526,11 @@ class eq extends Expression {
         e1.dump_with_types(out, n + 2);
         e2.dump_with_types(out, n + 2);
         dump_type(out, n);
+    }
+
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+       
     }
 
 }
@@ -1499,6 +1577,11 @@ class leq extends Expression {
         dump_type(out, n);
     }
 
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+       
+    }
+
 }
 
 
@@ -1536,6 +1619,11 @@ class comp extends Expression {
         out.println(Utilities.pad(n) + "_comp");
         e1.dump_with_types(out, n + 2);
         dump_type(out, n);
+    }
+
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+       
     }
 
 }
@@ -1577,6 +1665,11 @@ class int_const extends Expression {
         dump_type(out, n);
     }
 
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+       this.set_type(TreeConstants.Int);
+    }
+
 }
 
 
@@ -1614,6 +1707,11 @@ class bool_const extends Expression {
         out.println(Utilities.pad(n) + "_bool");
         dump_Boolean(out, n + 2, val);
         dump_type(out, n);
+    }
+
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+        this.set_type(TreeConstants.Bool);
     }
 
 }
@@ -1657,6 +1755,11 @@ class string_const extends Expression {
         dump_type(out, n);
     }
 
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+        set_type(TreeConstants.Str);
+    }
+
 }
 
 
@@ -1694,6 +1797,11 @@ class new_ extends Expression {
         out.println(Utilities.pad(n) + "_new");
         dump_AbstractSymbol(out, n + 2, type_name);
         dump_type(out, n);
+    }
+
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+       
     }
 
 }
@@ -1735,6 +1843,11 @@ class isvoid extends Expression {
         dump_type(out, n);
     }
 
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+       
+    }
+
 }
 
 
@@ -1766,6 +1879,11 @@ class no_expr extends Expression {
         dump_line(out, n);
         out.println(Utilities.pad(n) + "_no_expr");
         dump_type(out, n);
+    }
+
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+       
     }
 
 }
@@ -1805,6 +1923,11 @@ class object extends Expression {
         out.println(Utilities.pad(n) + "_object");
         dump_AbstractSymbol(out, n + 2, name);
         dump_type(out, n);
+    }
+
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+       
     }
 
 }
