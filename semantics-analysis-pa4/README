@@ -231,7 +231,7 @@ Types (tree node) that enter new scopes are:
 * Class
 * Method
 * Let
-
+* Case
 
 Tasks.
 [x] Identify classes and their inheritances.

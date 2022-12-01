@@ -1,0 +1,8 @@
+class Main inherits IO {
+   main(): Object {
+       1
+   };
+   main2(y: Int): Object {
+       let x: SELF_TYPE in 1
+   };
+};

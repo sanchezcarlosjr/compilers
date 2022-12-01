@@ -1303,7 +1303,17 @@ class let extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-
+        semanticsAnalysis.enterScope();
+        init.inferType(semanticsAnalysis);
+        AbstractSymbol t0 = semanticsAnalysis.findType(type_decl).name;
+        if (!semanticsAnalysis.conformance(init.get_type(), t0)) {
+            semanticsAnalysis.semantError(this)
+                    .printf("Inferred type %s of initialization of %s does not conform to identifier's declared type %s.\n", init.get_type(), identifier, type_decl);
+        }
+        semanticsAnalysis.addIdToCurrentScope(identifier, new object(getLineNumber(), identifier, type_decl));
+        body.inferType(semanticsAnalysis);
+        set_type(body.get_type());
+        semanticsAnalysis.exitScope();
     }
 
 }
@@ -1996,6 +2006,14 @@ class object extends Expression {
         super(lineNumber);
         name = a1;
     }
+
+    // Semantics analysis purposes
+    public object(int lineNumber, AbstractSymbol a1, AbstractSymbol type) {
+        super(lineNumber);
+        name = a1;
+        set_type(type);
+    }
+
 
     public TreeNode copy() {
         return new object(lineNumber, copy_AbstractSymbol(name));
