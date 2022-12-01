@@ -7,6 +7,8 @@
 //////////////////////////////////////////////////////////
 
 
+import com.sun.source.tree.Tree;
+
 import java.io.PrintStream;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -1099,7 +1101,7 @@ class cond extends Expression {
  * See <a href="TreeNode.html">TreeNode</a> for full documentation.
  */
 class loop extends Expression {
-    protected Expression pred;
+    protected Expression predicate;
     protected Expression body;
 
     /**
@@ -1111,17 +1113,17 @@ class loop extends Expression {
      */
     public loop(int lineNumber, Expression a1, Expression a2) {
         super(lineNumber);
-        pred = a1;
+        predicate = a1;
         body = a2;
     }
 
     public TreeNode copy() {
-        return new loop(lineNumber, (Expression) pred.copy(), (Expression) body.copy());
+        return new loop(lineNumber, (Expression) predicate.copy(), (Expression) body.copy());
     }
 
     public void dump(PrintStream out, int n) {
         out.print(Utilities.pad(n) + "loop\n");
-        pred.dump(out, n + 2);
+        predicate.dump(out, n + 2);
         body.dump(out, n + 2);
     }
 
@@ -1129,13 +1131,19 @@ class loop extends Expression {
     public void dump_with_types(PrintStream out, int n) {
         dump_line(out, n);
         out.println(Utilities.pad(n) + "_loop");
-        pred.dump_with_types(out, n + 2);
+        predicate.dump_with_types(out, n + 2);
         body.dump_with_types(out, n + 2);
         dump_type(out, n);
     }
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
+        predicate.inferType(semanticsAnalysis);
+        if (predicate.get_type() != TreeConstants.Bool) {
+            semanticsAnalysis.semantError(this).println("Loop condition does not have type Bool.");
+        }
+        body.inferType(semanticsAnalysis);
+        set_type(TreeConstants.Object_);
     }
 
 }
@@ -1295,17 +1303,35 @@ class let extends Expression {
     }
 
 }
+abstract class Operator extends  Expression {
+    protected Expression e1;
+    protected Expression e2;
+    protected String operator;
 
+    public Operator(int lineNumber, Expression a1, Expression a2, String op) {
+        super(lineNumber);
+        e1 = a1;
+        e2 = a2;
+        operator = op;
+    }
+
+    @Override
+    public void inferType(SemanticsAnalysis semanticsAnalysis) {
+        e1.inferType(semanticsAnalysis);
+        e2.inferType(semanticsAnalysis);
+        if (e1.get_type() != TreeConstants.Int) {
+            semanticsAnalysis.semantError(this).printf("Non-TreeConstants.Int arguments: %s %s %s.\n", e1.get_type(), operator, e2.get_type());
+        }
+        set_type(TreeConstants.Int);
+    }
+}
 
 /**
  * Defines AST constructor 'plus'.
  * <p>
  * See <a href="TreeNode.html">TreeNode</a> for full documentation.
  */
-class plus extends Expression {
-    protected Expression e1;
-    protected Expression e2;
-
+class plus extends Operator {
     /**
      * Creates "plus" AST node.
      *
@@ -1314,9 +1340,7 @@ class plus extends Expression {
      * @param a1         initial value for e2
      */
     public plus(int lineNumber, Expression a1, Expression a2) {
-        super(lineNumber);
-        e1 = a1;
-        e2 = a2;
+        super(lineNumber, a1, a2, "+");
     }
 
     public TreeNode copy() {
@@ -1337,12 +1361,6 @@ class plus extends Expression {
         e2.dump_with_types(out, n + 2);
         dump_type(out, n);
     }
-
-    @Override
-    public void inferType(SemanticsAnalysis semanticsAnalysis) {
-
-    }
-
 }
 
 
@@ -1351,10 +1369,7 @@ class plus extends Expression {
  * <p>
  * See <a href="TreeNode.html">TreeNode</a> for full documentation.
  */
-class sub extends Expression {
-    protected Expression e1;
-    protected Expression e2;
-
+class sub extends Operator {
     /**
      * Creates "sub" AST node.
      *
@@ -1363,9 +1378,7 @@ class sub extends Expression {
      * @param a1         initial value for e2
      */
     public sub(int lineNumber, Expression a1, Expression a2) {
-        super(lineNumber);
-        e1 = a1;
-        e2 = a2;
+        super(lineNumber, a1, a2, "-");
     }
 
     public TreeNode copy() {
@@ -1386,12 +1399,6 @@ class sub extends Expression {
         e2.dump_with_types(out, n + 2);
         dump_type(out, n);
     }
-
-    @Override
-    public void inferType(SemanticsAnalysis semanticsAnalysis) {
-
-    }
-
 }
 
 
@@ -1400,10 +1407,7 @@ class sub extends Expression {
  * <p>
  * See <a href="TreeNode.html">TreeNode</a> for full documentation.
  */
-class mul extends Expression {
-    protected Expression e1;
-    protected Expression e2;
-
+class mul extends Operator {
     /**
      * Creates "mul" AST node.
      *
@@ -1412,9 +1416,7 @@ class mul extends Expression {
      * @param a1         initial value for e2
      */
     public mul(int lineNumber, Expression a1, Expression a2) {
-        super(lineNumber);
-        e1 = a1;
-        e2 = a2;
+        super(lineNumber, a1, a2, "*");
     }
 
     public TreeNode copy() {
@@ -1436,11 +1438,6 @@ class mul extends Expression {
         dump_type(out, n);
     }
 
-    @Override
-    public void inferType(SemanticsAnalysis semanticsAnalysis) {
-
-    }
-
 }
 
 
@@ -1449,10 +1446,7 @@ class mul extends Expression {
  * <p>
  * See <a href="TreeNode.html">TreeNode</a> for full documentation.
  */
-class divide extends Expression {
-    protected Expression e1;
-    protected Expression e2;
-
+class divide extends Operator {
     /**
      * Creates "divide" AST node.
      *
@@ -1461,9 +1455,7 @@ class divide extends Expression {
      * @param a1         initial value for e2
      */
     public divide(int lineNumber, Expression a1, Expression a2) {
-        super(lineNumber);
-        e1 = a1;
-        e2 = a2;
+        super(lineNumber, a1, a2, "/");
     }
 
     public TreeNode copy() {
@@ -1484,12 +1476,6 @@ class divide extends Expression {
         e2.dump_with_types(out, n + 2);
         dump_type(out, n);
     }
-
-    @Override
-    public void inferType(SemanticsAnalysis semanticsAnalysis) {
-
-    }
-
 }
 
 
