@@ -11,6 +11,7 @@ import java.io.PrintStream;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 /**
@@ -1101,7 +1102,7 @@ class cond extends Expression {
          }
         then_exp.inferType(semanticsAnalysis);
         else_exp.inferType(semanticsAnalysis);
-        set_type(semanticsAnalysis.join_by_least_type_principle(then_exp, else_exp));
+        set_type(semanticsAnalysis.join_by_least_type_principle(then_exp.get_type(), else_exp.get_type()));
     }
 
 }
@@ -1206,7 +1207,17 @@ class typcase extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-
+        expr.inferType(semanticsAnalysis);
+        AtomicReference<AbstractSymbol> type = new AtomicReference<>(null);
+        cases.children().forEach((child) -> {
+            semanticsAnalysis.enterScope();
+            branch case_ = (branch) child;
+            semanticsAnalysis.addIdToCurrentScope(case_.name, new object(case_.getLineNumber(), case_.name, case_.type_decl));
+            case_.expr.inferType(semanticsAnalysis);
+            type.set(semanticsAnalysis.join_by_least_type_principle(case_.expr.get_type(), type.get()));
+            semanticsAnalysis.exitScope();
+        });
+        set_type(type.get());
     }
 
 }

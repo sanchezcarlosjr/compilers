@@ -1,0 +1,6 @@
+class Main {
+   y: Int;
+   main(): Bool {
+        case 0 of x: String => true; esac
+   };
+};

@@ -359,12 +359,14 @@ class SemanticsAnalysis {
         return this.typeTable.containsKey(type);
     }
 
-    public AbstractSymbol join_by_least_type_principle(Expression a, Expression b) {
-        if (!hierarchyGraph.containsKey(a.get_type()) && !hierarchyGraph.containsKey(b.get_type()))
+    public AbstractSymbol join_by_least_type_principle(AbstractSymbol typeA, AbstractSymbol typeB) {
+        if (typeB == null)
+            return typeA;
+        if (!hierarchyGraph.containsKey(typeA) && !hierarchyGraph.containsKey(typeB))
             return TreeConstants.Object_;
-        var parentsA = hierarchyGraph.get(a.get_type());
-        var parentsB = hierarchyGraph.get(a.get_type());
-        var node = parentsA.size() >= parentsB.size() ? b.get_type() : a.get_type();
+        var parentsA = hierarchyGraph.get(typeA);
+        var parentsB = hierarchyGraph.get(typeB);
+        var node = parentsA.size() >= parentsB.size() ? typeB : typeA;
         var table = parentsA.size() >= parentsB.size() ? parentsA : parentsB;
         do  {
             if (table.contains(node))
