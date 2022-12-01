@@ -97,6 +97,8 @@ class TreeConstants {
     public static final AbstractSymbol substr = 
 	AbstractTable.idtable.addString("substr");
 
+    public static final AbstractSymbol ACCESS_MODIFIER_PUBLIC = AbstractTable.idtable.addString("public");
+
     public static final AbstractSymbol type_name = 
 	AbstractTable.idtable.addString("type_name");
 

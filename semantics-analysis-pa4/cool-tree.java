@@ -147,6 +147,13 @@ class Features extends ListNode {
         return this;
     }
 
+    public Features appendElement(method elem) {
+        if (elem.visibility == TreeConstants.ACCESS_MODIFIER_PUBLIC)
+            this.methods.put(elem.getName(), elem);
+        addElement(elem);
+        return this;
+    }
+
     public TreeNode copy() {
         return new Features(lineNumber, copyElements());
     }
@@ -532,6 +539,7 @@ class method extends Feature {
     protected Formals formals;
     protected AbstractSymbol return_type;
     protected Expression expr;
+    protected AbstractSymbol visibility = TreeConstants.ACCESS_MODIFIER_PUBLIC;
 
     /**
      * Creates "method" AST node.
