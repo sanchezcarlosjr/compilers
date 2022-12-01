@@ -1611,7 +1611,13 @@ class eq extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-
+        e1.inferType(semanticsAnalysis);
+        e2.inferType(semanticsAnalysis);
+        boolean failToRightBasicTypeComparison = (semanticsAnalysis.isBasicType(e1.get_type()) || semanticsAnalysis.isBasicType(e2.get_type())) && e1.get_type() != e2.get_type();
+        if (failToRightBasicTypeComparison) {
+            semanticsAnalysis.semantError(this).println("Illegal comparison with a basic type.");
+        }
+        set_type(TreeConstants.Bool);
     }
 
 }

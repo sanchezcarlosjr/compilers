@@ -340,6 +340,12 @@ class SemanticsAnalysis {
         return false;
     }
 
+    public boolean isBasicType(AbstractSymbol type) {
+        return TreeConstants.Int == type ||
+                TreeConstants.Bool == type ||
+                TreeConstants.Str == type;
+    }
+
     public boolean existsType(AbstractSymbol type) {
         return this.typeTable.containsKey(type) || type == TreeConstants.SELF_TYPE;
     }
