@@ -1322,7 +1322,6 @@ abstract class Operator extends  Expression {
         if (e1.get_type() != TreeConstants.Int) {
             semanticsAnalysis.semantError(this).printf("Non-TreeConstants.Int arguments: %s %s %s.\n", e1.get_type(), operator, e2.get_type());
         }
-        set_type(TreeConstants.Int);
     }
 }
 
@@ -1341,6 +1340,7 @@ class plus extends Operator {
      */
     public plus(int lineNumber, Expression a1, Expression a2) {
         super(lineNumber, a1, a2, "+");
+        set_type(TreeConstants.Int);
     }
 
     public TreeNode copy() {
@@ -1379,6 +1379,7 @@ class sub extends Operator {
      */
     public sub(int lineNumber, Expression a1, Expression a2) {
         super(lineNumber, a1, a2, "-");
+        set_type(TreeConstants.Int);
     }
 
     public TreeNode copy() {
@@ -1417,6 +1418,7 @@ class mul extends Operator {
      */
     public mul(int lineNumber, Expression a1, Expression a2) {
         super(lineNumber, a1, a2, "*");
+        set_type(TreeConstants.Int);
     }
 
     public TreeNode copy() {
@@ -1456,6 +1458,7 @@ class divide extends Operator {
      */
     public divide(int lineNumber, Expression a1, Expression a2) {
         super(lineNumber, a1, a2, "/");
+        set_type(TreeConstants.Int);
     }
 
     public TreeNode copy() {
@@ -1519,22 +1522,18 @@ class neg extends Expression {
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
         e1.inferType(semanticsAnalysis);
         if (e1.get_type() != TreeConstants.Int)
-            semanticsAnalysis.semantError(e1).printf("");
+            semanticsAnalysis.semantError(e1).printf("Argument of ~ has type %s instead of TreeConstants.Int.", e1.get_type());
         set_type(TreeConstants.Int);
     }
 
 }
-
 
 /**
  * Defines AST constructor 'lt'.
  * <p>
  * See <a href="TreeNode.html">TreeNode</a> for full documentation.
  */
-class lt extends Expression {
-    protected Expression e1;
-    protected Expression e2;
-
+class lt extends Operator {
     /**
      * Creates "lt" AST node.
      *
@@ -1543,9 +1542,8 @@ class lt extends Expression {
      * @param a1         initial value for e2
      */
     public lt(int lineNumber, Expression a1, Expression a2) {
-        super(lineNumber);
-        e1 = a1;
-        e2 = a2;
+        super(lineNumber, a1, a2, "<");
+        set_type(TreeConstants.Bool);
     }
 
     public TreeNode copy() {
@@ -1565,11 +1563,6 @@ class lt extends Expression {
         e1.dump_with_types(out, n + 2);
         e2.dump_with_types(out, n + 2);
         dump_type(out, n);
-    }
-
-    @Override
-    public void inferType(SemanticsAnalysis semanticsAnalysis) {
-
     }
 
 }
@@ -1629,10 +1622,7 @@ class eq extends Expression {
  * <p>
  * See <a href="TreeNode.html">TreeNode</a> for full documentation.
  */
-class leq extends Expression {
-    protected Expression e1;
-    protected Expression e2;
-
+class leq extends Operator {
     /**
      * Creates "leq" AST node.
      *
@@ -1641,9 +1631,7 @@ class leq extends Expression {
      * @param a1         initial value for e2
      */
     public leq(int lineNumber, Expression a1, Expression a2) {
-        super(lineNumber);
-        e1 = a1;
-        e2 = a2;
+        super(lineNumber, a1, a2, "<=");
     }
 
     public TreeNode copy() {
@@ -1665,16 +1653,11 @@ class leq extends Expression {
         dump_type(out, n);
     }
 
-    @Override
-    public void inferType(SemanticsAnalysis semanticsAnalysis) {
-
-    }
-
 }
 
 
 /**
- * Defines AST constructor 'comp'.
+ * Defines AST constructor 'comp'. not(x: bool): bool
  * <p>
  * See <a href="TreeNode.html">TreeNode</a> for full documentation.
  */
@@ -1711,7 +1694,10 @@ class comp extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-
+        e1.inferType(semanticsAnalysis);
+        if (e1.get_type() != TreeConstants.Bool)
+            System.out.printf("Argument of 'not' has type %s instead of Bool.", e1.get_type());
+        set_type(TreeConstants.Bool);
     }
 
 }
@@ -1936,6 +1922,7 @@ class isvoid extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
+        e1.inferType(semanticsAnalysis);
         set_type(TreeConstants.Bool);
     }
 

@@ -1,5 +1,5 @@
 class Main {
-   main(): Int {
-        ~4
+   main(): Bool {
+        not("abc")
    };
 };
