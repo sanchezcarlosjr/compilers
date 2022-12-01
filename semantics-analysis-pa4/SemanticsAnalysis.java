@@ -36,6 +36,8 @@ class SemanticsAnalysis {
 
     private final Hashtable<AbstractSymbol,class_c> typeTable = new Hashtable<>();
 
+    private final Hashtable<AbstractSymbol, HashSet<AbstractSymbol>> hierarchyGraph = new Hashtable<>();
+
     private int semanticsErrors;
 
     private class_c current_class;
@@ -85,13 +87,16 @@ class SemanticsAnalysis {
 
     public void bfs(class_c node, HashSet<AbstractSymbol> set) {
         class_c source = node;
+        hierarchyGraph.put(source.getName(), new HashSet<>());
         while (!Objects.equals(node.getName(), TreeConstants.Object_)) {
             set.add(node.getName());
+            hierarchyGraph.get(source.getName()).add(node.getName());
             if (Objects.equals(source.name.getString(), node.getParent().getString())) {
                 semantError(node).printf("Class %s, or an ancestor of %s, is involved in an inheritance cycle.%n", node.getName(), node.getName());
                 return;
             }
             if (set.contains(node.getParent())) {
+                hierarchyGraph.get(source.getName()).add(node.getParent());
                 return;
             }
             if (
@@ -354,4 +359,18 @@ class SemanticsAnalysis {
         return this.typeTable.containsKey(type);
     }
 
+    public AbstractSymbol join_by_least_type_principle(Expression a, Expression b) {
+        if (!hierarchyGraph.containsKey(a.get_type()) && !hierarchyGraph.containsKey(b.get_type()))
+            return TreeConstants.Object_;
+        var parentsA = hierarchyGraph.get(a.get_type());
+        var parentsB = hierarchyGraph.get(a.get_type());
+        var node = parentsA.size() >= parentsB.size() ? b.get_type() : a.get_type();
+        var table = parentsA.size() >= parentsB.size() ? parentsA : parentsB;
+        do  {
+            if (table.contains(node))
+                return node;
+            node = typeTable.get(node).parent;
+        } while(node != TreeConstants.Object_);
+        return TreeConstants.Object_;
+    }
 }

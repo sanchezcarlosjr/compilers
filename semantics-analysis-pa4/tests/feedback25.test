@@ -1,0 +1,5 @@
+class Main {
+   main(): Object {
+       if 5 = 5 then 5 else "abc" fi
+   };
+};

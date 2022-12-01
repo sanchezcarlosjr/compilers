@@ -1,0 +1,20 @@
+class X {
+   x: Int;
+   main(): Object {
+       if 5 = 5 then 5 else "abc" fi
+   };
+};
+
+class Y inherits X {
+   y: Int;
+};
+
+class Z inherits X {
+   z: Int;
+};
+
+class Main {
+   main(): Object {
+       if 5 = 5 then new Y else new Z fi
+   };
+};

@@ -3,3 +3,15 @@ class Main {
         5 = (new Main)
    };
 };
+
+class Main2 {
+   main(): Bool {
+        5 = (new Main)
+   };
+};
+
+class Main3 {
+   main(): Bool {
+        5 = (new Main)
+   };
+};

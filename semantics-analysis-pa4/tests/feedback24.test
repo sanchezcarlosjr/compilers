@@ -1,0 +1,23 @@
+class Main {
+   main(): Bool {
+        5 = 5
+   };
+};
+
+class Y inherits Z {
+   main(): Bool {
+        5 = 5
+   };
+};
+
+class X inherits Y {
+   main(): Bool {
+        5 = 5
+   };
+};
+
+class Z inherits X {
+   main(): Bool {
+        5 = 5
+   };
+};

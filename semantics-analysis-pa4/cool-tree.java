@@ -7,8 +7,6 @@
 //////////////////////////////////////////////////////////
 
 
-import com.sun.source.tree.Tree;
-
 import java.io.PrintStream;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -1097,7 +1095,13 @@ class cond extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-
+         pred.inferType(semanticsAnalysis);
+         if (pred.get_type() != TreeConstants.Bool) {
+             semanticsAnalysis.semantError(this).println("Predicate of 'if' does not have type Bool.");
+         }
+        then_exp.inferType(semanticsAnalysis);
+        else_exp.inferType(semanticsAnalysis);
+        set_type(semanticsAnalysis.join_by_least_type_principle(then_exp, else_exp));
     }
 
 }
@@ -1725,7 +1729,7 @@ class comp extends Expression {
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
         e1.inferType(semanticsAnalysis);
         if (e1.get_type() != TreeConstants.Bool)
-            System.out.printf("Argument of 'not' has type %s instead of Bool.", e1.get_type());
+            semanticsAnalysis.semantError(this).printf("Argument of 'not' has type %s instead of %s.\n", e1.get_type(), TreeConstants.Bool);
         set_type(TreeConstants.Bool);
     }
 

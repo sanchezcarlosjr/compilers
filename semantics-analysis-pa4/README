@@ -206,11 +206,11 @@ Instructions
 Write-up for PA4
 ----------------
 # Requirements
-[] We must follow the requirement that errors don't cause the analyzes stops.
+[] We must follow the requirement that errors don't cause the analyzes stops except cycles.
 
 # Types
 Types have attributes. In COOL, some types are classes, program, expressions.
-We stop the transversal tree process when we lies with foundational types (Int, String, Object, Boolean).
+We stop the transversal tree process when we lies with foundational types (Int, String, Object, Boolean) or cycles.
 A function is a type. Its attribute is its signature.
 Arithmetic operations are functions.
 Attributes have visibility or scope. We follow the de facto standard public, private, protected, internal.
@@ -252,9 +252,18 @@ for class in classes
 ```
 O environment is semanticsAnalysis.lookupType() It searches on current scope, features and parents.
 
+join by the least principle is equivalent to ask: What is the least value that is in two ordered arrays?
+Examples are
+a=[1,2,3,4];b=[4]; Least value is = 4;
+a=[4];b=[1,2,3,4]; Least value is = 4;
+a=[4];b=[4]; Least value is = 4;
+a=[1,2,3,4,5,6,7];b=[4,5,6,7]; Least value is = 4;
 
-
-[x] Tests
-We've added custom tests called feedback\d.test where \d means a natural number.
-
-
+# CHANGELOG
+* We've added custom tests called feedback\d.test where \d means a natural number.
+* ClassesTable to SemanticsAnalysis.
+* cool-tree.java. Composite AST buildSymbolTable and inferType. Features are not save on symbol table but features.
+* SymtabExample (we've adapted SymbolTable to modern Java)
+* TokenConstant (we've added PUBLIC visibility)
+* SymbolTable (we've adapted SymbolTable to modern Java)
+* build.xml We modify it in order to test everything.
