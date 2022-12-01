@@ -1240,7 +1240,11 @@ class block extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-
+        body.children().forEach((child) -> {
+            ((Expression) child).inferType(semanticsAnalysis);
+        });
+        Expression lastExpression = (Expression) body.getNth(body.getLength()-1);
+        set_type(lastExpression.get_type());
     }
 
 }

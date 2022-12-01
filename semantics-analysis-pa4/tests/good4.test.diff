@@ -1,0 +1,71 @@
+*** The reference
+
+--- Yours
+
+***************
+
+*** 1,56 ****
+
+! #
+! _program
+!   #
+!   _class
+!     Main
+!     Object
+!     "tests/good4.test"
+!     (
+!     #
+!     _method
+!       main
+!       Object
+!       #
+!       _block
+!         #
+!         _dispatch
+!           #
+!           _int
+!             5
+!           : Int
+!           copy
+!           (
+!           )
+!         : Int
+!         #
+!         _dispatch
+!           #
+!           _string
+!             "test"
+!           : String
+!           copy
+!           (
+!           )
+!         : String
+!         #
+!         _dispatch
+!           #
+!           _bool
+!             1
+!           : Bool
+!           copy
+!           (
+!           )
+!         : Bool
+!         #
+!         _dispatch
+!           #
+!           _string
+!             "test"
+!           : String
+!           length
+!           (
+!           )
+!         : Int
+!       : Int
+!     )
+--- 1,5 ----
+
+! tests/good4.test:2: Dispatch to undefined method copy.
+! tests/good4.test:2: Dispatch to undefined method copy.
+! tests/good4.test:2: Dispatch to undefined method copy.
+! tests/good4.test:3: Dispatch to undefined method length.
+! Compilation halted due to static semantic errors.

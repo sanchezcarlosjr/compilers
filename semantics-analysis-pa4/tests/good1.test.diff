@@ -1,0 +1,24 @@
+*** The reference
+
+--- Yours
+
+***************
+
+*** 37,43 ****
+
+            _int
+              7
+            : Int
+!         : Bool
+          #
+          _comp
+            #
+--- 37,43 ----
+
+            _int
+              7
+            : Int
+!         : Object
+          #
+          _comp
+            #

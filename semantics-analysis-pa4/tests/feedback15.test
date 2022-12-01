@@ -1,9 +1,9 @@
 class Main {
    y: Int;
-   main(): Object {
+   main(): Bool {
        {
-          y <- 0;
-          let y: String in 4;
+          5+5;
+          6 < 6;
        }
    };
 };
