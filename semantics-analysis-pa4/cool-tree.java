@@ -1642,6 +1642,7 @@ class leq extends Operator {
      */
     public leq(int lineNumber, Expression a1, Expression a2) {
         super(lineNumber, a1, a2, "<=");
+        set_type(TreeConstants.Bool);
     }
 
     public TreeNode copy() {
