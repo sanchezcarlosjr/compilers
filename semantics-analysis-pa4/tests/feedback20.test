@@ -1,5 +1,5 @@
 class Main {
-   main():Bool {
-        "1" / "b"
+   main(): Int {
+        ~4
    };
 };

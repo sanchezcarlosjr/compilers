@@ -1517,7 +1517,10 @@ class neg extends Expression {
 
     @Override
     public void inferType(SemanticsAnalysis semanticsAnalysis) {
-
+        e1.inferType(semanticsAnalysis);
+        if (e1.get_type() != TreeConstants.Int)
+            semanticsAnalysis.semantError(e1).printf("");
+        set_type(TreeConstants.Int);
     }
 
 }
