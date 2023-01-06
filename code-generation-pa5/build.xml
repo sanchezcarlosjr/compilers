@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="PA5" default="source">
+  <description>
+    CS164 Programming Assignment #5
+  </description>
+
+  <!-- set global properties for this build -->
+  <property environment="env"/>
+  <property name="assn" value="5"/>
+  <property name="class" value="cs164"/>
+
+  <property name="src" value="CgenClassTable.java CgenNode.java CgenSupport.java TreeConstants.java cool-tree.java IntSymbol.java StringSymbol.java BoolConst.java example.cl README"/>
+  <property name="csrc" value="ASTConstants.java ASTLexer.java ASTParser.java AbstractSymbol.java AbstractTable.java Flags.java IdSymbol.java IdTable.java IntTable.java ListNode.java Cgen.java StringTable.java SymbolTable.java SymtabExample.java TokenConstants.java TreeNode.java ClassTable.java Utilities.java"/>
+
+  <property name="cfil" value="*.java"/>
+  <property name="lsrc" value="build.xml tests/1.cl tests/2.cl tests/3.cl tests/4.cl tests/5.cl tests/6.cl"/>
+  <property name="output" value="example.output"/>
+
+  <path id="classpath">
+    <dirset dir="."/>
+    <fileset dir="./" file="coolc.jar"/>
+  </path>
+
+  <!-- target: test -->
+  <target name="test" depends="cgen">
+    <exec executable="python">
+      <arg line="mycoolc.py example.cl"/>
+    </exec>
+	 <exec executable="python" output="example.output">
+      <arg line="runmips.py example.s"/>
+    </exec>
+  </target>
+
+<!-- target: test-all -->
+  <target name="test-all" depends="cgen">
+    <exec executable="python"> <arg line="compare-cgen.py tests/1.cl"/> </exec>
+    <exec executable="python"> <arg line="compare-cgen.py tests/2.cl"/> </exec>
+    <exec executable="python"> <arg line="compare-cgen.py tests/3.cl"/> </exec>
+    <exec executable="python"> <arg line="compare-cgen.py tests/4.cl"/> </exec>
+    <exec executable="python"> <arg line="compare-cgen.py tests/5.cl"/> </exec>
+    <exec executable="python"> <arg line="compare-cgen.py tests/checkpoint.cl"/> </exec>
+    <echo>
+You can check 'tests/NAME.diff" to know more about a failed test case.
+    </echo>
+  </target>
+
+  <!-- target: cgen -->
+  <target name="cgen" depends="cls">
+  </target>
+
+  <target name="cls" depends="clean">
+    <delete file="timestamp"/>
+    <javac srcdir="." destdir="." includes="${cfil}" debug="true" nowarn="true" failonerror="true">
+      <classpath refid="classpath"/>
+    </javac>
+    <touch file="timestamp"/> 
+  </target>
+
+  <!-- target: clean -->
+  <target name="clean">
+    <delete>
+      <fileset dir="." includes="*~ *.s *.class ${cgen} ${output} timestamp"/>
+      <fileset dir="./tests" includes="*.diff *.out.ref *.out.my *.s"/>
+    </delete>
+  </target>
+
+
+  <!-- target: submit-clean -->
+  <target name="submit-clean" depends="test">
+    <delete>
+      <fileset dir="." includes="*~ *.s *.class ${cgen} timestamp"/>
+      <fileset dir="./tests" includes="*.diff *.out.ref *.out.my *.s"/>
+    </delete>
+  </target>
+</project>
