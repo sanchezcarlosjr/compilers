@@ -205,6 +205,10 @@ Instructions
 
 Write-up for PA4
 ----------------
+
+TODO: 
+Apply Lowest Common Ancestor and Floyd's tortoise and hare.
+
 # Requirements
 [] We must follow the requirement that errors don't cause the analyzes stops except cycles.
 
